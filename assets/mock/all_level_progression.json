@@ -1,0 +1,73 @@
+{
+    "object": "collection",
+    "url": "https://api.wanikani.com/v2/level_progressions",
+    "pages": {
+        "per_page": 500,
+        "next_url": null,
+        "previous_url": null
+    },
+    "total_count": 4,
+    "data_updated_at": "2025-06-05T04:44:18.789073Z",
+    "data": [
+        {
+            "id": 3557312,
+            "object": "level_progression",
+            "url": "https://api.wanikani.com/v2/level_progressions/3557312",
+            "data_updated_at": "2025-04-10T15:21:50.962267Z",
+            "data": {
+                "created_at": "2025-03-09T10:11:11.814773Z",
+                "level": 1,
+                "unlocked_at": "2025-03-09T10:11:11.814388Z",
+                "started_at": "2025-03-09T10:17:23.016685Z",
+                "passed_at": "2025-04-10T15:21:50.960905Z",
+                "completed_at": null,
+                "abandoned_at": null
+            }
+        },
+        {
+            "id": 3608058,
+            "object": "level_progression",
+            "url": "https://api.wanikani.com/v2/level_progressions/3608058",
+            "data_updated_at": "2025-04-25T20:37:47.044292Z",
+            "data": {
+                "created_at": "2025-04-10T15:21:50.983117Z",
+                "level": 2,
+                "unlocked_at": "2025-04-10T15:21:50.981094Z",
+                "started_at": "2025-04-10T17:50:43.521981Z",
+                "passed_at": "2025-04-25T20:37:47.039562Z",
+                "completed_at": null,
+                "abandoned_at": null
+            }
+        },
+        {
+            "id": 3631332,
+            "object": "level_progression",
+            "url": "https://api.wanikani.com/v2/level_progressions/3631332",
+            "data_updated_at": "2025-06-05T02:04:43.750916Z",
+            "data": {
+                "created_at": "2025-04-25T20:37:47.060948Z",
+                "level": 3,
+                "unlocked_at": "2025-04-25T20:37:47.059316Z",
+                "started_at": "2025-04-26T22:45:52.061420Z",
+                "passed_at": "2025-06-05T02:04:43.747597Z",
+                "completed_at": null,
+                "abandoned_at": null
+            }
+        },
+        {
+            "id": 3691690,
+            "object": "level_progression",
+            "url": "https://api.wanikani.com/v2/level_progressions/3691690",
+            "data_updated_at": "2025-06-05T04:44:18.789073Z",
+            "data": {
+                "created_at": "2025-06-05T02:04:43.770655Z",
+                "level": 4,
+                "unlocked_at": "2025-06-05T02:04:43.768478Z",
+                "started_at": "2025-06-05T04:44:18.785283Z",
+                "passed_at": null,
+                "completed_at": null,
+                "abandoned_at": null
+            }
+        }
+    ]
+}

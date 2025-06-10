@@ -1,0 +1,21 @@
+{
+    "id": 481608946,
+    "object": "review_statistic",
+    "url": "https://api.wanikani.com/v2/review_statistics/481608946",
+    "data_updated_at": "2025-05-07T15:30:03.764055Z",
+    "data": {
+        "created_at": "2025-03-09T10:17:23.012469Z",
+        "subject_id": 1,
+        "subject_type": "radical",
+        "meaning_correct": 7,
+        "meaning_incorrect": 0,
+        "meaning_max_streak": 7,
+        "meaning_current_streak": 7,
+        "reading_correct": 7,
+        "reading_incorrect": 0,
+        "reading_max_streak": 7,
+        "reading_current_streak": 7,
+        "percentage_correct": 100,
+        "hidden": false
+    }
+}

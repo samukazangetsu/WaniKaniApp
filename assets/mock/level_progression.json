@@ -1,0 +1,15 @@
+{
+    "id": 3691690,
+    "object": "level_progression",
+    "url": "https://api.wanikani.com/v2/level_progressions/3691690",
+    "data_updated_at": "2025-06-05T04:44:18.789073Z",
+    "data": {
+        "created_at": "2025-06-05T02:04:43.770655Z",
+        "level": 4,
+        "unlocked_at": "2025-06-05T02:04:43.768478Z",
+        "started_at": "2025-06-05T04:44:18.785283Z",
+        "passed_at": null,
+        "completed_at": null,
+        "abandoned_at": null
+    }
+}
