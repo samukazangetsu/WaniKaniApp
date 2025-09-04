@@ -1,13 +1,11 @@
 class HomeUserEntity {
-  final int level;
-  final int lessonsAvailable;
-  final int reviewsAvailable;
-  final double levelProgress;
+  final int currentLevel;
+  final double levelProgressPercentage;
+  final String levelKanji;
 
   HomeUserEntity({
-    required this.level,
-    required this.lessonsAvailable,
-    required this.reviewsAvailable,
-    required this.levelProgress,
+    required this.currentLevel,
+    required this.levelProgressPercentage,
+    required this.levelKanji,
   });
 }

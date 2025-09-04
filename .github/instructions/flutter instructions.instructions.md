@@ -24,7 +24,7 @@ Certifique-se de que qualquer código gerado atenda às seguintes condições:
 - Código bem estruturado com indentação e nomeação clara de variáveis, funções e classes.
 - Siga os padrões de design e arquitetura já mencionados para todos os aspectos do código gerado.
 - Quando possível, inclua exemplos práticos aplicando os frameworks e ferramentas preferidos listados acima.
-- Todo o padrão de código, organização de pastas e arquitetura que você deve utilizar pode ser consultado na pasta "H:/Projetos/TemplateApp".
+- Todo o padrão de código, organização de pastas e arquitetura que você deve utilizar pode ser consultado no projeto "H:/Projetos/TemplateApp".
 
 # Examples
 
