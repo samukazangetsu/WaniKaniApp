@@ -26,6 +26,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   dartz: ^0.10.1
   dio: ^5.4.0              # HTTP client robusto
+  drift: ^2.14.0           # SQLite type-safe
   flutter:
     sdk: flutter
   flutter_bloc: ^9.1.1
@@ -33,7 +34,6 @@ dependencies:
   # Networking
   
   # Storage/Cache
-  drift: ^2.14.0           # SQLite type-safe
   sqlite3_flutter_libs: ^0.5.0
   path_provider: ^2.1.0
   
