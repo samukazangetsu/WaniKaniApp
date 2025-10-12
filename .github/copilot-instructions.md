@@ -73,13 +73,24 @@ class GetAssignmentsUseCase {
 // Cubit (presentation layer)
 Future<void> loadAssignments() async {
   emit(AssignmentLoading());
-  final result = await _getAssignments();
+  final result = await _loadAssignmentsData();
   result.fold(
     (error) => emit(AssignmentError(error.message)),
     (assignments) => emit(AssignmentLoaded(assignments)),
   );
 }
+
+// Método privado para carregar dados (Single Responsibility)
+Future<Either<IError, List<AssignmentEntity>>> _loadAssignmentsData() async {
+  return await _getAssignments();
+}
 ```
+
+**SOLID Principles in Cubits:**
+- **Single Responsibility:** Each method handles one specific task
+- **Separation of Concerns:** Public methods orchestrate, private methods execute
+- **Direct fold() usage:** Always use fold() to handle Either results, never check isLeft() then fold()
+- **No nested conditionals:** Use fold() chaining for multiple Either results
 
 ## Entity ↔ Model Pattern
 
@@ -352,7 +363,10 @@ flutter test --coverage
 ❌ **Don't** group multiple entities in one file - one entity per file  
 ❌ **Don't** create "god" use cases - one use case = one operation  
 ❌ **Don't** skip cache layer - always implement offline support  
-❌ **Don't** expose error details to UI - use user-friendly messages via `IError.message`
+❌ **Don't** expose error details to UI - use user-friendly messages via `IError.message`  
+❌ **Don't** check isLeft() then fold() - use fold() directly to handle both cases  
+❌ **Don't** create large methods in Cubits - extract private methods for each operation (SOLID)  
+❌ **Don't** mix orchestration and execution in the same method - separate concerns
 
 ## Project-Specific Context
 

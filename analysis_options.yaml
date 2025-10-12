@@ -47,7 +47,6 @@ linter:
     lines_longer_than_80_chars: true
     no_logic_in_create_state: true
     prefer_asserts_in_initializer_lists: true
-    sort_pub_dependencies: true
     test_types_in_equals: true
     unnecessary_lambdas: true
     unnecessary_parenthesis: true
