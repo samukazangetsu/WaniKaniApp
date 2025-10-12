@@ -9,13 +9,13 @@ class WaniKaniDataSource {
 
   const WaniKaniDataSource({required Dio dio}) : _dio = dio;
 
-  /// Obtém a progressão do nível atual do usuário.
+  /// Obtém todas as progressões de níveis do usuário.
   ///
-  /// Endpoint: `GET /level_progression`
+  /// Endpoint: `GET /level_progressions`
   ///
-  /// Retorna um único objeto de level_progression (não uma coleção).
-  Future<Response<dynamic>> getCurrentLevelProgression() async =>
-      _dio.get<dynamic>('/level_progression');
+  /// Retorna uma coleção de level_progressions.
+  Future<Response<dynamic>> getLevelProgressions() async =>
+      await _dio.get<dynamic>('/level_progressions');
 
   /// Obtém todos os assignments do usuário.
   ///

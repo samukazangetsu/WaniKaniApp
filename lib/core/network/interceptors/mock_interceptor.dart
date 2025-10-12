@@ -62,8 +62,8 @@ class MockInterceptor extends Interceptor {
   ///
   /// Retorna `null` se não houver mock configurado para o path.
   String? _getMockPath(String path) {
-    if (path.contains('level_progression')) {
-      return 'level_progression';
+    if (path.contains('level_progressions')) {
+      return 'all_level_progression';
     }
     if (path.contains('assignments')) {
       return 'all_assignments';

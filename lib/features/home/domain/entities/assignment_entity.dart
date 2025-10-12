@@ -61,7 +61,9 @@ class AssignmentEntity extends Equatable {
 
   /// Retorna `true` se o assignment está disponível para review agora.
   bool get isAvailableForReview {
-    if (availableAt == null) return false;
+    if (availableAt == null) {
+      return false;
+    }
     return availableAt!.isBefore(DateTime.now()) ||
         availableAt!.isAtSameMomentAs(DateTime.now());
   }

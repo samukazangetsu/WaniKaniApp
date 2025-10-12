@@ -23,27 +23,71 @@ void main() {
   });
 
   group('getCurrentLevelProgression', () {
-    final Map<String, dynamic> tLevelProgressionJson = <String, dynamic>{
-      'id': 3691690,
-      'object': 'level_progression',
-      'data': <String, dynamic>{
-        'level': 4,
-        'unlocked_at': '2025-06-05T02:04:43.768478Z',
-        'started_at': '2025-06-05T04:44:18.785283Z',
-        'passed_at': null,
-        'completed_at': null,
-        'abandoned_at': null,
-      },
+    final List<Map<String, dynamic>> tLevelProgressionsData =
+        <Map<String, dynamic>>[
+          <String, dynamic>{
+            'id': 3557312,
+            'object': 'level_progression',
+            'data': <String, dynamic>{
+              'level': 1,
+              'unlocked_at': '2025-03-09T10:11:11.814388Z',
+              'started_at': '2025-03-09T10:17:23.016685Z',
+              'passed_at': '2025-04-10T15:21:50.960905Z',
+              'completed_at': null,
+              'abandoned_at': null,
+            },
+          },
+          <String, dynamic>{
+            'id': 3608058,
+            'object': 'level_progression',
+            'data': <String, dynamic>{
+              'level': 2,
+              'unlocked_at': '2025-04-10T15:21:50.981094Z',
+              'started_at': '2025-04-10T17:50:43.521981Z',
+              'passed_at': '2025-04-25T20:37:47.039562Z',
+              'completed_at': null,
+              'abandoned_at': null,
+            },
+          },
+          <String, dynamic>{
+            'id': 3691690,
+            'object': 'level_progression',
+            'data': <String, dynamic>{
+              'level': 4,
+              'unlocked_at': '2025-06-05T02:04:43.768478Z',
+              'started_at': '2025-06-05T04:44:18.785283Z',
+              'passed_at': null,
+              'completed_at': null,
+              'abandoned_at': null,
+            },
+          },
+          <String, dynamic>{
+            'id': 3631332,
+            'object': 'level_progression',
+            'data': <String, dynamic>{
+              'level': 3,
+              'unlocked_at': '2025-04-25T20:37:47.059316Z',
+              'started_at': '2025-04-26T22:45:52.061420Z',
+              'passed_at': '2025-06-05T02:04:43.747597Z',
+              'completed_at': null,
+              'abandoned_at': null,
+            },
+          },
+        ];
+
+    final Map<String, dynamic> tLevelProgressionsResponse = <String, dynamic>{
+      'object': 'collection',
+      'data': tLevelProgressionsData,
     };
 
     test(
-      'deve retornar LevelProgressionEntity quando chamada for bem-sucedida',
+      'deve retornar nível atual (maior nível) quando chamada for bem-sucedida',
       () async {
         // Arrange
-        when(() => mockDataSource.getCurrentLevelProgression()).thenAnswer(
+        when(() => mockDataSource.getLevelProgressions()).thenAnswer(
           (_) async => Response<Map<String, dynamic>>(
             requestOptions: RequestOptions(path: '/level_progressions'),
-            data: tLevelProgressionJson,
+            data: tLevelProgressionsResponse,
             statusCode: 200,
           ),
         );
@@ -57,17 +101,42 @@ void main() {
         result.fold((_) => fail('Should return Right'), (
           LevelProgressionEntity entity,
         ) {
-          expect(entity.id, equals(3691690));
-          expect(entity.level, equals(4));
+          expect(entity.id, equals(3691690)); // Nível 4
+          expect(entity.level, equals(4)); // Maior nível
           expect(entity.startedAt, isNotNull);
         });
-        verify(() => mockDataSource.getCurrentLevelProgression()).called(1);
+        verify(() => mockDataSource.getLevelProgressions()).called(1);
       },
     );
 
+    test('deve retornar erro quando lista de progressões está vazia', () async {
+      // Arrange
+      when(() => mockDataSource.getLevelProgressions()).thenAnswer(
+        (_) async => Response<Map<String, dynamic>>(
+          requestOptions: RequestOptions(path: '/level_progressions'),
+          data: <String, dynamic>{
+            'object': 'collection',
+            'data': <Map<String, dynamic>>[],
+          },
+          statusCode: 200,
+        ),
+      );
+
+      // Act
+      final Either<IError, LevelProgressionEntity> result = await repository
+          .getCurrentLevelProgression();
+
+      // Assert
+      expect(result.isLeft(), true);
+      result.fold((IError error) {
+        expect(error, isA<InternalErrorEntity>());
+        expect(error.message, equals('Nenhuma progressão de nível encontrada'));
+      }, (_) => fail('Should return Left'));
+    });
+
     test('deve retornar ApiErrorEntity quando statusCode != 200', () async {
       // Arrange
-      when(() => mockDataSource.getCurrentLevelProgression()).thenAnswer(
+      when(() => mockDataSource.getLevelProgressions()).thenAnswer(
         (_) async => Response<Map<String, dynamic>>(
           requestOptions: RequestOptions(path: '/level_progressions'),
           data: <String, dynamic>{'error': 'Unauthorized'},
@@ -90,7 +159,7 @@ void main() {
     test('deve retornar InternalErrorEntity quando ocorre exceção', () async {
       // Arrange
       when(
-        () => mockDataSource.getCurrentLevelProgression(),
+        () => mockDataSource.getLevelProgressions(),
       ).thenThrow(Exception('Network error'));
 
       // Act

@@ -27,23 +27,46 @@ class HomeRepository implements IHomeRepository {
   getCurrentLevelProgression() async {
     try {
       final Response<dynamic> response = await _datasource
-          .getCurrentLevelProgression();
+          .getLevelProgressions();
 
       if (response.statusCode == 200) {
-        final LevelProgressionEntity entity = LevelProgressionModel.fromJson(
-          response.data as Map<String, dynamic>,
-        );
-        return Right(entity);
+        final List<dynamic> data =
+            (response.data as Map<String, dynamic>)['data'] as List<dynamic>;
+
+        if (data.isEmpty) {
+          return Left<IError, LevelProgressionEntity>(
+            InternalErrorEntity('Nenhuma progressão de nível encontrada'),
+          );
+        }
+
+        // Converter todas as progressões e ordenar por nível decrescente
+        final List<LevelProgressionEntity> progressions =
+            data
+                .map(
+                  (json) => LevelProgressionModel.fromJson(
+                    json as Map<String, dynamic>,
+                  ),
+                )
+                .toList()
+              ..sort(
+                (LevelProgressionEntity a, LevelProgressionEntity b) =>
+                    b.level.compareTo(a.level),
+              );
+
+        // Retornar a progressão do nível mais alto (nível atual)
+        return Right<IError, LevelProgressionEntity>(progressions.first);
       }
 
-      return Left(
+      return Left<IError, LevelProgressionEntity>(
         ApiErrorEntity(
           response.data?['error']?.toString() ?? 'Erro desconhecido',
           statusCode: response.statusCode,
         ),
       );
-    } catch (e) {
-      return Left(InternalErrorEntity(e.toString()));
+    } on Exception catch (e) {
+      return Left<IError, LevelProgressionEntity>(
+        InternalErrorEntity(e.toString()),
+      );
     }
   }
 
@@ -62,17 +85,19 @@ class HomeRepository implements IHomeRepository {
             )
             .toList();
 
-        return Right(assignments);
+        return Right<IError, List<AssignmentEntity>>(assignments);
       }
 
-      return Left(
+      return Left<IError, List<AssignmentEntity>>(
         ApiErrorEntity(
           response.data?['error']?.toString() ?? 'Erro desconhecido',
           statusCode: response.statusCode,
         ),
       );
-    } catch (e) {
-      return Left(InternalErrorEntity(e.toString()));
+    } on Exception catch (e) {
+      return Left<IError, List<AssignmentEntity>>(
+        InternalErrorEntity(e.toString()),
+      );
     }
   }
 }

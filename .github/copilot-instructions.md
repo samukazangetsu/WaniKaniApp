@@ -79,11 +79,6 @@ Future<void> loadAssignments() async {
     (assignments) => emit(AssignmentLoaded(assignments)),
   );
 }
-
-// Método privado para carregar dados (Single Responsibility)
-Future<Either<IError, List<AssignmentEntity>>> _loadAssignmentsData() async {
-  return await _getAssignments();
-}
 ```
 
 **SOLID Principles in Cubits:**

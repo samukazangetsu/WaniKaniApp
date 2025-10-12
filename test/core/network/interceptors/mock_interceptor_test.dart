@@ -33,22 +33,20 @@ void main() {
       },
     );
 
-    test(
-      'deve retornar mock de level_progressions quando path contém "level_progressions"',
-      () async {
-        // Arrange
-        const String expectedPath = '/level_progressions';
+    test('deve retornar mock de level_progressions quando '
+        'path contém "level_progressions"', () async {
+      // Arrange
+      const String expectedPath = '/level_progressions';
 
-        // Act
-        final Response<dynamic> response = await dio.get<dynamic>(expectedPath);
+      // Act
+      final Response<dynamic> response = await dio.get<dynamic>(expectedPath);
 
-        // Assert
-        expect(response.statusCode, equals(200));
-        expect(response.data, isA<Map<String, dynamic>>());
-        expect(response.data['object'], equals('collection'));
-        expect(response.data['data'], isA<List<dynamic>>());
-      },
-    );
+      // Assert
+      expect(response.statusCode, equals(200));
+      expect(response.data, isA<Map<String, dynamic>>());
+      expect(response.data['object'], equals('collection'));
+      expect(response.data['data'], isA<List<dynamic>>());
+    });
 
     test('deve simular delay de rede de aproximadamente 500ms', () async {
       // Arrange
