@@ -81,7 +81,7 @@ void main() {
     };
 
     test(
-      'deve retornar nível atual (maior nível) quando chamada for bem-sucedida',
+      'deve retornar nível atual (primeiro com passed_at == null)',
       () async {
         // Arrange
         when(() => mockDataSource.getLevelProgressions()).thenAnswer(
@@ -102,10 +102,84 @@ void main() {
           LevelProgressionEntity entity,
         ) {
           expect(entity.id, equals(3691690)); // Nível 4
-          expect(entity.level, equals(4)); // Maior nível
+          expect(entity.level, equals(4)); // Primeiro com passed_at == null
+          expect(entity.passedAt, isNull); // Confirma que passed_at é null
           expect(entity.startedAt, isNotNull);
         });
         verify(() => mockDataSource.getLevelProgressions()).called(1);
+      },
+    );
+
+    test(
+      'deve retornar item anterior quando não há passed_at == null mas há unlocked_at == null',
+      () async {
+        // Arrange - todos os níveis passados, exceto o próximo não desbloqueado
+        final List<Map<String, dynamic>> tAllPassedLevels =
+            <Map<String, dynamic>>[
+              <String, dynamic>{
+                'id': 1,
+                'object': 'level_progression',
+                'data': <String, dynamic>{
+                  'level': 1,
+                  'unlocked_at': '2025-03-09T10:11:11.814388Z',
+                  'started_at': '2025-03-09T10:17:23.016685Z',
+                  'passed_at': '2025-04-10T15:21:50.960905Z',
+                  'completed_at': null,
+                  'abandoned_at': null,
+                },
+              },
+              <String, dynamic>{
+                'id': 2,
+                'object': 'level_progression',
+                'data': <String, dynamic>{
+                  'level': 2,
+                  'unlocked_at': '2025-04-10T15:21:50.981094Z',
+                  'started_at': '2025-04-10T17:50:43.521981Z',
+                  'passed_at': '2025-04-25T20:37:47.039562Z',
+                  'completed_at': null,
+                  'abandoned_at': null,
+                },
+              },
+              <String, dynamic>{
+                'id': 3,
+                'object': 'level_progression',
+                'data': <String, dynamic>{
+                  'level': 3,
+                  'unlocked_at': null, // Não desbloqueado
+                  'started_at': null,
+                  'passed_at': null,
+                  'completed_at': null,
+                  'abandoned_at': null,
+                },
+              },
+            ];
+
+        when(() => mockDataSource.getLevelProgressions()).thenAnswer(
+          (_) async => Response<Map<String, dynamic>>(
+            requestOptions: RequestOptions(path: '/level_progressions'),
+            data: <String, dynamic>{
+              'object': 'collection',
+              'data': tAllPassedLevels,
+            },
+            statusCode: 200,
+          ),
+        );
+
+        // Act
+        final Either<IError, LevelProgressionEntity> result = await repository
+            .getCurrentLevelProgression();
+
+        // Assert
+        expect(result.isRight(), true);
+        result.fold((_) => fail('Should return Right'), (
+          LevelProgressionEntity entity,
+        ) {
+          expect(
+            entity.level,
+            equals(2),
+          ); // Item anterior ao unlocked_at == null
+          expect(entity.passedAt, isNotNull); // Nível 2 foi passado
+        });
       },
     );
 

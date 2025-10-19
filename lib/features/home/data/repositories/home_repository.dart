@@ -39,7 +39,7 @@ class HomeRepository implements IHomeRepository {
           );
         }
 
-        // Converter todas as progressões e ordenar por nível decrescente
+        // Converter todas as progressões e ordenar por nível crescente
         final List<LevelProgressionEntity> progressions =
             data
                 .map(
@@ -49,12 +49,47 @@ class HomeRepository implements IHomeRepository {
                 )
                 .toList()
               ..sort(
-                (LevelProgressionEntity a, LevelProgressionEntity b) =>
-                    b.level.compareTo(a.level),
+                (LevelProgressionEntity a, LevelProgressionEntity b) => a.level
+                    .compareTo(b.level), // Crescente para facilitar busca
               );
 
-        // Retornar a progressão do nível mais alto (nível atual)
-        return Right<IError, LevelProgressionEntity>(progressions.first);
+        // Encontrar nível atual usando as regras da API:
+        // 1. Primeiro item com passed_at == null (nível em progresso)
+        // 2. OU item anterior ao que tem unlocked_at == null
+        LevelProgressionEntity? currentLevel;
+
+        // Regra 1: Procurar primeiro nível com passed_at == null E unlocked_at != null
+        for (final LevelProgressionEntity progression in progressions) {
+          if (progression.passedAt == null && progression.unlockedAt != null) {
+            currentLevel = progression;
+            break;
+          }
+        }
+
+        // Regra 2: Se não encontrou, procurar item anterior ao unlocked_at == null
+        if (currentLevel == null) {
+          for (int i = 0; i < progressions.length; i++) {
+            if (progressions[i].unlockedAt == null && i > 0) {
+              currentLevel = progressions[i - 1];
+              break;
+            }
+          }
+        }
+
+        // Se ainda não encontrou, pegar o último nível com unlocked_at != null
+        if (currentLevel == null) {
+          for (int i = progressions.length - 1; i >= 0; i--) {
+            if (progressions[i].unlockedAt != null) {
+              currentLevel = progressions[i];
+              break;
+            }
+          }
+        }
+
+        // Fallback final: primeiro item
+        currentLevel ??= progressions.first;
+
+        return Right<IError, LevelProgressionEntity>(currentLevel);
       }
 
       return Left<IError, LevelProgressionEntity>(
