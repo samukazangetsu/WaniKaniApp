@@ -116,7 +116,8 @@ void main() {
     );
 
     blocTest<HomeCubit, HomeState>(
-      'deve emitir [Loading, Loaded] com dados parciais quando apenas getCurrentLevel falha',
+      'deve emitir [Loading, Loaded] com dados parciais '
+      'quando apenas getCurrentLevel falha',
       build: () {
         when(
           () => mockGetCurrentLevel(),
@@ -146,7 +147,8 @@ void main() {
     );
 
     blocTest<HomeCubit, HomeState>(
-      'deve emitir [Loading, Loaded] com dados parciais quando apenas getReviewStats falha',
+      'deve emitir [Loading, Loaded] com dados '
+      'parciais quando apenas getReviewStats falha',
       build: () {
         when(
           () => mockGetCurrentLevel(),
@@ -176,7 +178,8 @@ void main() {
     );
 
     blocTest<HomeCubit, HomeState>(
-      'deve emitir [Loading, Loaded] com dados parciais quando apenas getLessonStats falha',
+      'deve emitir [Loading, Loaded] com dados '
+      'parciais quando apenas getLessonStats falha',
       build: () {
         when(
           () => mockGetCurrentLevel(),
@@ -206,7 +209,8 @@ void main() {
     );
 
     blocTest<HomeCubit, HomeState>(
-      'deve emitir [Loading, Loaded] com dados parciais quando duas requisições falham',
+      'deve emitir [Loading, Loaded] com dados '
+      'parciais quando duas requisições falham',
       build: () {
         when(
           () => mockGetCurrentLevel(),

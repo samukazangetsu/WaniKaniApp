@@ -14,9 +14,8 @@ mixin AppRouter {
         path: '/',
         name: 'home',
         builder: (BuildContext context, GoRouterState state) =>
-            BlocProvider<HomeCubit>(
-              create: (BuildContext context) =>
-                  getIt<HomeCubit>()..loadDashboardData(),
+            BlocProvider<HomeCubit>.value(
+              value: getIt<HomeCubit>(),
               child: const HomeScreen(),
             ),
       ),

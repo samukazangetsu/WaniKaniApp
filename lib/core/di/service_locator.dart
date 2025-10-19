@@ -68,8 +68,8 @@ void setupDependencies({required bool useMock}) {
     () => GetLessonStatsUseCase(repository: getIt<IHomeRepository>()),
   );
 
-  // 5. Cubits (factory para criar nova instância cada vez)
-  getIt.registerFactory<HomeCubit>(
+  // 5. Cubits (LazySingleton para manter instância durante hot restart)
+  getIt.registerLazySingleton<HomeCubit>(
     () => HomeCubit(
       getCurrentLevel: getIt<GetCurrentLevelUseCase>(),
       getReviewStats: getIt<GetReviewStatsUseCase>(),

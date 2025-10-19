@@ -13,8 +13,26 @@ import 'package:wanikani_app/features/home/utils/home_strings.dart';
 /// - Número de lessons disponíveis
 ///
 /// Consome [HomeCubit] para gerenciar estado.
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final cubit = context.read<HomeCubit>();
+        if (cubit.state is HomeInitial) {
+          cubit.loadDashboardData();
+        }
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) => Scaffold(
