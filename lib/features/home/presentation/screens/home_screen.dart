@@ -52,9 +52,9 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
         HomeLoaded(
-          :final int currentLevel,
-          :final int reviewCount,
-          :final int lessonCount,
+          :final int? currentLevel,
+          :final int? reviewCount,
+          :final int? lessonCount,
         ) =>
           SingleChildScrollView(
             child: Column(
@@ -62,40 +62,44 @@ class HomeScreen extends StatelessWidget {
               children: <Widget>[
                 SizedBox(height: WaniKaniDesign.spacingMd),
 
-                // Card de progresso do nível
-                LevelProgressCard(
-                  currentLevel: currentLevel,
-                  progress: 0.75, // 75% como na imagem
-                  totalItems: 20, // 20 itens como na imagem
-                  completedItems: 15, // 15 completados
-                  onTap: () {
-                    // TODO: Navegar para detalhes do nível
-                  },
-                ),
+                // Card de progresso do nível (oculta se não carregou)
+                if (currentLevel != null)
+                  LevelProgressCard(
+                    currentLevel: currentLevel,
+                    progress: 0.75, // 75% como na imagem
+                    totalItems: 20, // 20 itens como na imagem
+                    completedItems: 15, // 15 completados
+                    onTap: () {
+                      // TODO: Navegar para detalhes do nível
+                    },
+                  ),
 
-                SizedBox(height: WaniKaniDesign.spacingSm),
+                if (currentLevel != null)
+                  SizedBox(height: WaniKaniDesign.spacingSm),
 
-                // Card de Reviews
-                StudyMetricCard.reviews(
-                  value: reviewCount.toString(),
-                  enabled: reviewCount > 0,
-                  onTap: reviewCount > 0
-                      ? () {
-                          // TODO: Navegar para reviews
-                        }
-                      : null,
-                ),
+                // Card de Reviews (oculta se não carregou)
+                if (reviewCount != null)
+                  StudyMetricCard.reviews(
+                    value: reviewCount.toString(),
+                    enabled: reviewCount > 0,
+                    onTap: reviewCount > 0
+                        ? () {
+                            // TODO: Navegar para reviews
+                          }
+                        : null,
+                  ),
 
-                // Card de Lessons
-                StudyMetricCard.lessons(
-                  value: lessonCount.toString(),
-                  enabled: lessonCount > 0,
-                  onTap: lessonCount > 0
-                      ? () {
-                          // TODO: Navegar para lessons
-                        }
-                      : null,
-                ),
+                // Card de Lessons (oculta se não carregou)
+                if (lessonCount != null)
+                  StudyMetricCard.lessons(
+                    value: lessonCount.toString(),
+                    enabled: lessonCount > 0,
+                    onTap: lessonCount > 0
+                        ? () {
+                            // TODO: Navegar para lessons
+                          }
+                        : null,
+                  ),
               ],
             ),
           ),

@@ -4,9 +4,13 @@ import 'package:wanikani_app/core/error/ierror.dart';
 import 'package:wanikani_app/core/error/internal_error_entity.dart';
 import 'package:wanikani_app/features/home/data/datasources/wanikani_datasource.dart';
 import 'package:wanikani_app/features/home/data/models/assignment_model.dart';
+import 'package:wanikani_app/features/home/data/models/lesson_stats_model.dart';
 import 'package:wanikani_app/features/home/data/models/level_progression_model.dart';
+import 'package:wanikani_app/features/home/data/models/review_stats_model.dart';
 import 'package:wanikani_app/features/home/domain/entities/assignment_entity.dart';
+import 'package:wanikani_app/features/home/domain/entities/lesson_stats_entity.dart';
 import 'package:wanikani_app/features/home/domain/entities/level_progression_entity.dart';
+import 'package:wanikani_app/features/home/domain/entities/review_stats_entity.dart';
 import 'package:wanikani_app/features/home/domain/repositories/i_home_repository.dart';
 
 /// Implementação do repositório para dados da Home/Dashboard.
@@ -134,6 +138,54 @@ class HomeRepository implements IHomeRepository {
       return Left<IError, List<AssignmentEntity>>(
         InternalErrorEntity(e.toString()),
       );
+    }
+  }
+
+  @override
+  Future<Either<IError, ReviewStatsEntity>> getReviewStats() async {
+    try {
+      final response = await _datasource.getReviews();
+
+      if (response.statusCode == 200) {
+        final reviewStats = ReviewStatsModel.fromJson(
+          response.data as Map<String, dynamic>,
+        );
+
+        return Right<IError, ReviewStatsEntity>(reviewStats);
+      }
+
+      return Left<IError, ReviewStatsEntity>(
+        ApiErrorEntity(
+          response.data?['error']?.toString() ?? 'Erro desconhecido',
+          statusCode: response.statusCode,
+        ),
+      );
+    } on Exception catch (e) {
+      return Left<IError, ReviewStatsEntity>(InternalErrorEntity(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<IError, LessonStatsEntity>> getLessonStats() async {
+    try {
+      final response = await _datasource.getStudyMaterials();
+
+      if (response.statusCode == 200) {
+        final lessonStats = LessonStatsModel.fromJson(
+          response.data as Map<String, dynamic>,
+        );
+
+        return Right<IError, LessonStatsEntity>(lessonStats);
+      }
+
+      return Left<IError, LessonStatsEntity>(
+        ApiErrorEntity(
+          response.data?['error']?.toString() ?? 'Erro desconhecido',
+          statusCode: response.statusCode,
+        ),
+      );
+    } on Exception catch (e) {
+      return Left<IError, LessonStatsEntity>(InternalErrorEntity(e.toString()));
     }
   }
 }

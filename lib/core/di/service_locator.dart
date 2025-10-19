@@ -4,8 +4,9 @@ import 'package:wanikani_app/core/network/interceptors/mock_interceptor.dart';
 import 'package:wanikani_app/features/home/data/datasources/wanikani_datasource.dart';
 import 'package:wanikani_app/features/home/data/repositories/home_repository.dart';
 import 'package:wanikani_app/features/home/domain/repositories/i_home_repository.dart';
-import 'package:wanikani_app/features/home/domain/usecases/get_assignment_metrics_usecase.dart';
 import 'package:wanikani_app/features/home/domain/usecases/get_current_level_usecase.dart';
+import 'package:wanikani_app/features/home/domain/usecases/get_lesson_stats_usecase.dart';
+import 'package:wanikani_app/features/home/domain/usecases/get_review_stats_usecase.dart';
 import 'package:wanikani_app/features/home/presentation/cubits/home_cubit.dart';
 
 /// Instância global do GetIt para dependency injection.
@@ -60,15 +61,19 @@ void setupDependencies({required bool useMock}) {
   getIt.registerLazySingleton<GetCurrentLevelUseCase>(
     () => GetCurrentLevelUseCase(repository: getIt<IHomeRepository>()),
   );
-  getIt.registerLazySingleton<GetAssignmentMetricsUseCase>(
-    () => GetAssignmentMetricsUseCase(repository: getIt<IHomeRepository>()),
+  getIt.registerLazySingleton<GetReviewStatsUseCase>(
+    () => GetReviewStatsUseCase(repository: getIt<IHomeRepository>()),
+  );
+  getIt.registerLazySingleton<GetLessonStatsUseCase>(
+    () => GetLessonStatsUseCase(repository: getIt<IHomeRepository>()),
   );
 
   // 5. Cubits (factory para criar nova instância cada vez)
   getIt.registerFactory<HomeCubit>(
     () => HomeCubit(
       getCurrentLevel: getIt<GetCurrentLevelUseCase>(),
-      getAssignmentMetrics: getIt<GetAssignmentMetricsUseCase>(),
+      getReviewStats: getIt<GetReviewStatsUseCase>(),
+      getLessonStats: getIt<GetLessonStatsUseCase>(),
     ),
   );
 }

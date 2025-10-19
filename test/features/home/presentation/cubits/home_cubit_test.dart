@@ -3,10 +3,12 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:wanikani_app/core/error/internal_error_entity.dart';
-import 'package:wanikani_app/features/home/domain/entities/assignment_entity.dart';
+import 'package:wanikani_app/features/home/domain/entities/lesson_stats_entity.dart';
 import 'package:wanikani_app/features/home/domain/entities/level_progression_entity.dart';
-import 'package:wanikani_app/features/home/domain/usecases/get_assignment_metrics_usecase.dart';
+import 'package:wanikani_app/features/home/domain/entities/review_stats_entity.dart';
 import 'package:wanikani_app/features/home/domain/usecases/get_current_level_usecase.dart';
+import 'package:wanikani_app/features/home/domain/usecases/get_lesson_stats_usecase.dart';
+import 'package:wanikani_app/features/home/domain/usecases/get_review_stats_usecase.dart';
 import 'package:wanikani_app/features/home/presentation/cubits/home_cubit.dart';
 import 'package:wanikani_app/features/home/presentation/cubits/home_state.dart';
 
@@ -14,20 +16,24 @@ import 'package:wanikani_app/features/home/presentation/cubits/home_state.dart';
 class MockGetCurrentLevelUseCase extends Mock
     implements GetCurrentLevelUseCase {}
 
-class MockGetAssignmentMetricsUseCase extends Mock
-    implements GetAssignmentMetricsUseCase {}
+class MockGetReviewStatsUseCase extends Mock implements GetReviewStatsUseCase {}
+
+class MockGetLessonStatsUseCase extends Mock implements GetLessonStatsUseCase {}
 
 void main() {
   late HomeCubit cubit;
   late MockGetCurrentLevelUseCase mockGetCurrentLevel;
-  late MockGetAssignmentMetricsUseCase mockGetAssignmentMetrics;
+  late MockGetReviewStatsUseCase mockGetReviewStats;
+  late MockGetLessonStatsUseCase mockGetLessonStats;
 
   setUp(() {
     mockGetCurrentLevel = MockGetCurrentLevelUseCase();
-    mockGetAssignmentMetrics = MockGetAssignmentMetricsUseCase();
+    mockGetReviewStats = MockGetReviewStatsUseCase();
+    mockGetLessonStats = MockGetLessonStatsUseCase();
     cubit = HomeCubit(
       getCurrentLevel: mockGetCurrentLevel,
-      getAssignmentMetrics: mockGetAssignmentMetrics,
+      getReviewStats: mockGetReviewStats,
+      getLessonStats: mockGetLessonStats,
     );
   });
 
@@ -45,30 +51,8 @@ void main() {
     abandonedAt: null,
   );
 
-  final tAssignments = <AssignmentEntity>[
-    AssignmentEntity(
-      id: 1,
-      subjectId: 100,
-      subjectType: 'kanji',
-      srsStage: 3,
-      availableAt: DateTime.now().subtract(const Duration(hours: 1)),
-      unlockedAt: true,
-      startedAt: DateTime.now().subtract(const Duration(days: 2)),
-      passedAt: null,
-      burnedAt: null,
-    ),
-    const AssignmentEntity(
-      id: 2,
-      subjectId: 200,
-      subjectType: 'radical',
-      srsStage: 0,
-      availableAt: null,
-      unlockedAt: true,
-      startedAt: null,
-      passedAt: null,
-      burnedAt: null,
-    ),
-  ];
+  const tReviewStats = ReviewStatsEntity(totalCount: 42);
+  const tLessonStats = LessonStatsEntity(totalCount: 88);
 
   group('HomeCubit', () {
     test('estado inicial deve ser HomeInitial', () {
@@ -76,14 +60,17 @@ void main() {
     });
 
     blocTest<HomeCubit, HomeState>(
-      'deve emitir [Loading, Loaded] quando ambos use cases retornam sucesso',
+      'deve emitir [Loading, Loaded] quando todos use cases retornam sucesso',
       build: () {
         when(
           () => mockGetCurrentLevel(),
         ).thenAnswer((_) async => Right(tLevelProgression));
         when(
-          () => mockGetAssignmentMetrics(),
-        ).thenAnswer((_) async => Right(tAssignments));
+          () => mockGetReviewStats(),
+        ).thenAnswer((_) async => const Right(tReviewStats));
+        when(
+          () => mockGetLessonStats(),
+        ).thenAnswer((_) async => const Right(tLessonStats));
         return cubit;
       },
       act: (HomeCubit cubit) => cubit.loadDashboardData(),
@@ -91,66 +78,175 @@ void main() {
         const HomeLoading(),
         HomeLoaded(
           levelProgression: tLevelProgression,
-          assignments: tAssignments,
+          reviewCount: 42,
+          lessonCount: 88,
         ),
       ],
       verify: (_) {
         verify(() => mockGetCurrentLevel()).called(1);
-        verify(() => mockGetAssignmentMetrics()).called(1);
+        verify(() => mockGetReviewStats()).called(1);
+        verify(() => mockGetLessonStats()).called(1);
       },
     );
 
     blocTest<HomeCubit, HomeState>(
-      'deve emitir [Loading, Error] quando getCurrentLevel falha',
+      'deve emitir [Loading, Error] apenas quando TODAS as requisições falham',
       build: () {
         when(
           () => mockGetCurrentLevel(),
         ).thenAnswer((_) async => Left(InternalErrorEntity('Erro de rede')));
         when(
-          () => mockGetAssignmentMetrics(),
-        ).thenAnswer((_) async => Right(tAssignments));
-        return cubit;
-      },
-      act: (HomeCubit cubit) => cubit.loadDashboardData(),
-      expect: () => const <HomeState>[HomeLoading(), HomeError('Erro de rede')],
-      verify: (_) {
-        verify(() => mockGetCurrentLevel()).called(1);
-        // Não deve chamar getAssignments se getCurrentLevel falha
-        verifyNever(() => mockGetAssignmentMetrics());
-      },
-    );
-
-    blocTest<HomeCubit, HomeState>(
-      'deve emitir [Loading, Error] quando getAssignmentMetrics falha',
-      build: () {
+          () => mockGetReviewStats(),
+        ).thenAnswer((_) async => Left(InternalErrorEntity('Erro de rede')));
         when(
-          () => mockGetCurrentLevel(),
-        ).thenAnswer((_) async => Right(tLevelProgression));
-        when(() => mockGetAssignmentMetrics()).thenAnswer(
-          (_) async => Left(InternalErrorEntity('Erro ao buscar assignments')),
-        );
+          () => mockGetLessonStats(),
+        ).thenAnswer((_) async => Left(InternalErrorEntity('Erro de rede')));
         return cubit;
       },
       act: (HomeCubit cubit) => cubit.loadDashboardData(),
       expect: () => const <HomeState>[
         HomeLoading(),
-        HomeError('Erro ao buscar assignments'),
+        HomeError('Não foi possível carregar os dados do dashboard'),
       ],
       verify: (_) {
         verify(() => mockGetCurrentLevel()).called(1);
-        verify(() => mockGetAssignmentMetrics()).called(1);
+        verify(() => mockGetReviewStats()).called(1);
+        verify(() => mockGetLessonStats()).called(1);
       },
     );
 
     blocTest<HomeCubit, HomeState>(
-      'HomeLoaded deve calcular reviewCount e lessonCount corretamente',
+      'deve emitir [Loading, Loaded] com dados parciais quando apenas getCurrentLevel falha',
+      build: () {
+        when(
+          () => mockGetCurrentLevel(),
+        ).thenAnswer((_) async => Left(InternalErrorEntity('Erro de rede')));
+        when(
+          () => mockGetReviewStats(),
+        ).thenAnswer((_) async => const Right(tReviewStats));
+        when(
+          () => mockGetLessonStats(),
+        ).thenAnswer((_) async => const Right(tLessonStats));
+        return cubit;
+      },
+      act: (HomeCubit cubit) => cubit.loadDashboardData(),
+      expect: () => <HomeState>[
+        const HomeLoading(),
+        const HomeLoaded(
+          levelProgression: null,
+          reviewCount: 42,
+          lessonCount: 88,
+        ),
+      ],
+      verify: (_) {
+        verify(() => mockGetCurrentLevel()).called(1);
+        verify(() => mockGetReviewStats()).called(1);
+        verify(() => mockGetLessonStats()).called(1);
+      },
+    );
+
+    blocTest<HomeCubit, HomeState>(
+      'deve emitir [Loading, Loaded] com dados parciais quando apenas getReviewStats falha',
+      build: () {
+        when(
+          () => mockGetCurrentLevel(),
+        ).thenAnswer((_) async => Right(tLevelProgression));
+        when(() => mockGetReviewStats()).thenAnswer(
+          (_) async => Left(InternalErrorEntity('Erro ao buscar reviews')),
+        );
+        when(
+          () => mockGetLessonStats(),
+        ).thenAnswer((_) async => const Right(tLessonStats));
+        return cubit;
+      },
+      act: (HomeCubit cubit) => cubit.loadDashboardData(),
+      expect: () => <HomeState>[
+        const HomeLoading(),
+        HomeLoaded(
+          levelProgression: tLevelProgression,
+          reviewCount: null,
+          lessonCount: 88,
+        ),
+      ],
+      verify: (_) {
+        verify(() => mockGetCurrentLevel()).called(1);
+        verify(() => mockGetReviewStats()).called(1);
+        verify(() => mockGetLessonStats()).called(1);
+      },
+    );
+
+    blocTest<HomeCubit, HomeState>(
+      'deve emitir [Loading, Loaded] com dados parciais quando apenas getLessonStats falha',
       build: () {
         when(
           () => mockGetCurrentLevel(),
         ).thenAnswer((_) async => Right(tLevelProgression));
         when(
-          () => mockGetAssignmentMetrics(),
-        ).thenAnswer((_) async => Right(tAssignments));
+          () => mockGetReviewStats(),
+        ).thenAnswer((_) async => const Right(tReviewStats));
+        when(() => mockGetLessonStats()).thenAnswer(
+          (_) async => Left(InternalErrorEntity('Erro ao buscar lições')),
+        );
+        return cubit;
+      },
+      act: (HomeCubit cubit) => cubit.loadDashboardData(),
+      expect: () => <HomeState>[
+        const HomeLoading(),
+        HomeLoaded(
+          levelProgression: tLevelProgression,
+          reviewCount: 42,
+          lessonCount: null,
+        ),
+      ],
+      verify: (_) {
+        verify(() => mockGetCurrentLevel()).called(1);
+        verify(() => mockGetReviewStats()).called(1);
+        verify(() => mockGetLessonStats()).called(1);
+      },
+    );
+
+    blocTest<HomeCubit, HomeState>(
+      'deve emitir [Loading, Loaded] com dados parciais quando duas requisições falham',
+      build: () {
+        when(
+          () => mockGetCurrentLevel(),
+        ).thenAnswer((_) async => Right(tLevelProgression));
+        when(
+          () => mockGetReviewStats(),
+        ).thenAnswer((_) async => Left(InternalErrorEntity('Erro de rede')));
+        when(
+          () => mockGetLessonStats(),
+        ).thenAnswer((_) async => Left(InternalErrorEntity('Erro de rede')));
+        return cubit;
+      },
+      act: (HomeCubit cubit) => cubit.loadDashboardData(),
+      expect: () => <HomeState>[
+        const HomeLoading(),
+        HomeLoaded(
+          levelProgression: tLevelProgression,
+          reviewCount: null,
+          lessonCount: null,
+        ),
+      ],
+      verify: (_) {
+        verify(() => mockGetCurrentLevel()).called(1);
+        verify(() => mockGetReviewStats()).called(1);
+        verify(() => mockGetLessonStats()).called(1);
+      },
+    );
+
+    blocTest<HomeCubit, HomeState>(
+      'HomeLoaded deve usar reviewCount e lessonCount dos endpoints',
+      build: () {
+        when(
+          () => mockGetCurrentLevel(),
+        ).thenAnswer((_) async => Right(tLevelProgression));
+        when(
+          () => mockGetReviewStats(),
+        ).thenAnswer((_) async => const Right(tReviewStats));
+        when(
+          () => mockGetLessonStats(),
+        ).thenAnswer((_) async => const Right(tLessonStats));
         return cubit;
       },
       act: (HomeCubit cubit) => cubit.loadDashboardData(),
@@ -159,9 +255,43 @@ void main() {
         expect(state, isA<HomeLoaded>());
         final loadedState = state as HomeLoaded;
         expect(loadedState.currentLevel, equals(4));
-        expect(loadedState.reviewCount, equals(1)); // 1 review disponível
-        expect(loadedState.lessonCount, equals(1)); // 1 lição disponível
+        expect(loadedState.reviewCount, equals(42)); // Do endpoint /reviews
+        expect(
+          loadedState.lessonCount,
+          equals(88),
+        ); // Do endpoint /study_materials
       },
     );
+
+    test('hasAnyData deve retornar true quando há pelo menos um dado', () {
+      const stateComTodos = HomeLoaded(
+        levelProgression: LevelProgressionEntity(
+          id: 1,
+          level: 4,
+          unlockedAt: null,
+          startedAt: null,
+          passedAt: null,
+          completedAt: null,
+          abandonedAt: null,
+        ),
+        reviewCount: 42,
+        lessonCount: 88,
+      );
+      expect(stateComTodos.hasAnyData, isTrue);
+
+      const stateParcial = HomeLoaded(
+        levelProgression: null,
+        reviewCount: null,
+        lessonCount: 88,
+      );
+      expect(stateParcial.hasAnyData, isTrue);
+
+      const stateVazio = HomeLoaded(
+        levelProgression: null,
+        reviewCount: null,
+        lessonCount: null,
+      );
+      expect(stateVazio.hasAnyData, isFalse);
+    });
   });
 }

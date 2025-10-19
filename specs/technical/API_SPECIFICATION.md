@@ -3,7 +3,7 @@
 > **Base URL:** `https://api.wanikani.com/v2`  
 > **Documentação Oficial:** https://docs.api.wanikani.com/20170710/  
 > **Versão API:** 2.0 (2017-07-10 revision)  
-> **Última Atualização deste Doc:** 11/10/2025
+> **Última Atualização deste Doc:** 19/10/2025
 
 ---
 
@@ -182,7 +182,164 @@ final response = await dio.get(
 
 ---
 
-### 3. GET /review_statistics
+### 3. GET /reviews
+
+**Propósito:** Retorna lista de reviews (sessões de revisão) do usuário.
+
+**URL Completa:** `https://api.wanikani.com/v2/reviews`
+
+**Recomendação de Cache:** **1 hora** (muda frequentemente)
+
+**Uso no Dashboard:** Pegar `total_count` para exibir número de reviews disponíveis.
+
+**Parâmetros Query (Opcionais):**
+
+| Parâmetro | Tipo | Descrição |
+|-----------|------|-----------|
+| `subject_ids` | string | Filtrar por IDs de subjects |
+| `updated_after` | datetime | Reviews atualizados após data |
+
+**Exemplo de Request:**
+
+```dart
+final response = await dio.get(
+  '/reviews',
+  options: Options(
+    headers: {'Authorization': 'Bearer $apiKey'},
+  ),
+);
+```
+
+**Exemplo de Response:**
+
+```json
+{
+  "object": "collection",
+  "url": "https://api.wanikani.com/v2/reviews",
+  "pages": {
+    "per_page": 1000,
+    "next_url": null,
+    "previous_url": null
+  },
+  "total_count": 127,
+  "data_updated_at": "2025-10-19T03:45:36.251730Z",
+  "data": [
+    {
+      "id": 487053453,
+      "object": "review",
+      "url": "https://api.wanikani.com/v2/reviews/487053453",
+      "data_updated_at": "2025-04-16T13:24:55.258721Z",
+      "data": {
+        "created_at": "2025-04-16T13:24:55.258721Z",
+        "assignment_id": 526070297,
+        "spaced_repetition_system_id": 1,
+        "subject_id": 16,
+        "starting_srs_stage": 7,
+        "ending_srs_stage": 8,
+        "incorrect_meaning_answers": 0,
+        "incorrect_reading_answers": 0
+      }
+    }
+  ]
+}
+```
+
+**Campos Importantes:**
+
+- `total_count`: **USAR ESTE CAMPO** para contagem de reviews disponíveis no dashboard
+- `assignment_id`: ID do assignment relacionado
+- `subject_id`: ID do radical/kanji/vocabulário
+- `starting_srs_stage`: SRS stage antes do review
+- `ending_srs_stage`: SRS stage após o review
+- `incorrect_meaning_answers`: Erros no significado
+- `incorrect_reading_answers`: Erros na leitura
+
+**⚠️ Importante para o Dashboard:**
+- Não é necessário processar o array `data` para contar reviews
+- Use apenas o campo `total_count` da resposta
+- Muito mais eficiente que filtrar assignments por `available_at`
+
+---
+
+### 4. GET /study_materials
+
+**Propósito:** Retorna materiais de estudo (notas, sinônimos) criados pelo usuário.
+
+**URL Completa:** `https://api.wanikani.com/v2/study_materials`
+
+**Recomendação de Cache:** **24 horas**
+
+**Uso no Dashboard:** Pegar `total_count` para exibir número de lições (lessons) disponíveis.
+
+**Parâmetros Query (Opcionais):**
+
+| Parâmetro | Tipo | Descrição |
+|-----------|------|-----------|
+| `subject_ids` | string | Filtrar por IDs de subjects |
+| `subject_types` | string | Filtrar por tipo: `radical`, `kanji`, `vocabulary` |
+| `updated_after` | datetime | Study materials atualizados após data |
+
+**Exemplo de Request:**
+
+```dart
+final response = await dio.get(
+  '/study_materials',
+  options: Options(
+    headers: {'Authorization': 'Bearer $apiKey'},
+  ),
+);
+```
+
+**Exemplo de Response:**
+
+```json
+{
+  "object": "collection",
+  "url": "https://api.wanikani.com/v2/study_materials",
+  "pages": {
+    "per_page": 500,
+    "next_url": null,
+    "previous_url": null
+  },
+  "total_count": 88,
+  "data_updated_at": "2025-10-19T03:45:36.251730Z",
+  "data": [
+    {
+      "id": 12345,
+      "object": "study_material",
+      "url": "https://api.wanikani.com/v2/study_materials/12345",
+      "data_updated_at": "2025-10-19T03:45:36.251730Z",
+      "data": {
+        "created_at": "2025-03-09T10:17:23.012469Z",
+        "subject_id": 1,
+        "subject_type": "radical",
+        "meaning_note": "Nota personalizada do usuário",
+        "reading_note": "Dica de leitura",
+        "meaning_synonyms": ["sinônimo1", "sinônimo2"],
+        "hidden": false
+      }
+    }
+  ]
+}
+```
+
+**Campos Importantes:**
+
+- `total_count`: **USAR ESTE CAMPO** para contagem de lições (lessons) disponíveis no dashboard
+- `subject_id`: ID do radical/kanji/vocabulário
+- `subject_type`: Tipo do subject
+- `meaning_note`: Nota personalizada do usuário sobre o significado
+- `reading_note`: Nota personalizada sobre a leitura
+- `meaning_synonyms`: Sinônimos aceitos como corretos
+
+**⚠️ Importante para o Dashboard:**
+- Não é necessário processar o array `data` para contar lessons
+- Use apenas o campo `total_count` da resposta
+- Muito mais eficiente que filtrar assignments por `srs_stage == 0`
+
+---
+
+### 5. GET /review_statistics
 
 **Propósito:** Estatísticas de reviews por subject (acertos, erros, streaks).
 
@@ -374,9 +531,17 @@ Future<Either<IError, T>> _handleResponse<T>(
 class CacheConfig {
   static const Duration assignmentsTTL = Duration(hours: 24);
   static const Duration levelProgressionsTTL = Duration(hours: 24);
+  static const Duration reviewsTTL = Duration(hours: 1); // Muda frequentemente
+  static const Duration studyMaterialsTTL = Duration(hours: 24);
   static const Duration reviewStatisticsTTL = Duration(hours: 1);
 }
 ```
+
+**⚠️ Nota sobre Dashboard:**
+- Para o dashboard home, usar endpoints `/reviews` e `/study_materials` em vez de `/assignments`
+- Muito mais eficiente: apenas ler `total_count` em vez de processar arrays grandes
+- `/reviews` → total de reviews disponíveis
+- `/study_materials` → total de lições (lessons) disponíveis
 
 ### Cache Headers (Conditional Requests)
 
@@ -433,6 +598,8 @@ class MockInterceptor extends Interceptor {
   String _getMockPath(String path) {
     if (path.contains('/assignments')) return 'all_assignments';
     if (path.contains('/level_progressions')) return 'all_level_progression';
+    if (path.contains('/reviews')) return 'all_reviews';
+    if (path.contains('/study_materials')) return 'all_study_material';
     if (path.contains('/review_statistics')) return 'all_review_statistics';
     return 'unknown';
   }
@@ -450,5 +617,9 @@ class MockInterceptor extends Interceptor {
 
 ---
 
-**Última Revisão:** 11/10/2025  
+**Última Revisão:** 19/10/2025  
 **Próxima Revisão:** Após testes de integração completos
+
+**Changelog:**
+- **19/10/2025**: Adicionados endpoints `/reviews` e `/study_materials` para dashboard
+- **11/10/2025**: Versão inicial com `/assignments`, `/level_progressions`, `/review_statistics`

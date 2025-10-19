@@ -1,0 +1,12 @@
+{
+  "object": "collection",
+  "url": "https://api.wanikani.com/v2/reviews",
+  "pages": {
+    "per_page": 1000,
+    "next_url": null,
+    "previous_url": null
+  },
+  "total_count": 127,
+  "data_updated_at": "2025-10-19T10:30:00.000000Z",
+  "data": []
+}

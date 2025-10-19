@@ -67,6 +67,12 @@ class MockInterceptor extends Interceptor {
     if (path.contains('assignments')) {
       return 'all_assignments';
     }
+    if (path.contains('reviews')) {
+      return 'all_reviews';
+    }
+    if (path.contains('study_materials')) {
+      return 'all_study_material';
+    }
     return null;
   }
 }

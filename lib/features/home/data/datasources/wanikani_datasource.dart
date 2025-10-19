@@ -24,4 +24,22 @@ class WaniKaniDataSource {
   /// Retorna uma coleção de assignments.
   Future<Response<dynamic>> getAssignments() async =>
       _dio.get<dynamic>('/assignments');
+
+  /// Obtém o total de reviews disponíveis.
+  ///
+  /// Endpoint: `GET /reviews`
+  ///
+  /// Retorna uma coleção com o campo `total_count` indicando
+  /// quantos reviews estão disponíveis para o usuário.
+  Future<Response<dynamic>> getReviews() async =>
+      await _dio.get<dynamic>('/reviews');
+
+  /// Obtém o total de lições disponíveis.
+  ///
+  /// Endpoint: `GET /study_materials`
+  ///
+  /// Retorna uma coleção com o campo `total_count` indicando
+  /// quantas lições estão disponíveis para o usuário.
+  Future<Response<dynamic>> getStudyMaterials() async =>
+      await _dio.get<dynamic>('/study_materials');
 }

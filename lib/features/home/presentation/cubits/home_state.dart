@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:wanikani_app/features/home/domain/entities/assignment_entity.dart';
 import 'package:wanikani_app/features/home/domain/entities/level_progression_entity.dart';
 
 /// Estados da HomeScreen.
@@ -35,26 +34,32 @@ final class HomeError extends HomeState {
 }
 
 /// Estado de sucesso - dados carregados com sucesso.
+///
+/// Permite valores opcionais para cada seção do dashboard.
+/// Se alguma requisição falhar, apenas aquela seção será ocultada.
 final class HomeLoaded extends HomeState {
-  /// Progressão do nível atual.
-  final LevelProgressionEntity levelProgression;
+  /// Progressão do nível atual (null se falhou ao carregar).
+  final LevelProgressionEntity? levelProgression;
 
-  /// Lista de todos os assignments.
-  final List<AssignmentEntity> assignments;
+  /// Total de reviews disponíveis (null se falhou ao carregar).
+  final int? reviewCount;
 
-  const HomeLoaded({required this.levelProgression, required this.assignments});
+  /// Total de lições disponíveis (null se falhou ao carregar).
+  final int? lessonCount;
+
+  const HomeLoaded({this.levelProgression, this.reviewCount, this.lessonCount});
 
   /// Número do nível atual (extraído de levelProgression).
-  int get currentLevel => levelProgression.level;
+  int? get currentLevel => levelProgression?.level;
 
-  /// Quantidade de reviews disponíveis agora.
-  int get reviewCount =>
-      assignments.where((AssignmentEntity a) => a.isAvailableForReview).length;
-
-  /// Quantidade de lições disponíveis.
-  int get lessonCount =>
-      assignments.where((AssignmentEntity a) => a.isLesson).length;
+  /// Verifica se há pelo menos um dado disponível.
+  bool get hasAnyData =>
+      levelProgression != null || reviewCount != null || lessonCount != null;
 
   @override
-  List<Object> get props => <Object>[levelProgression, assignments];
+  List<Object?> get props => <Object?>[
+    levelProgression,
+    reviewCount,
+    lessonCount,
+  ];
 }
