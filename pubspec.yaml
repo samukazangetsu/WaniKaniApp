@@ -43,7 +43,6 @@ dependencies:
   get_it: ^7.6.0
   
   # UI/Theme
-  google_fonts: ^6.1.0
   flutter_screenutil: ^5.9.0
   
   # Utilities
@@ -57,6 +56,29 @@ flutter:
   # Mock assets para desenvolvimento
   assets:
     - assets/mock/
+  
+  # Fontes Noto Sans JP para interface japonesa
+  fonts:
+    - family: Noto Sans JP
+      fonts:
+        - asset: assets/fonts/NotoSansJP-Thin.ttf
+          weight: 100
+        - asset: assets/fonts/NotoSansJP-ExtraLight.ttf
+          weight: 200
+        - asset: assets/fonts/NotoSansJP-Light.ttf
+          weight: 300
+        - asset: assets/fonts/NotoSansJP-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/NotoSansJP-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/NotoSansJP-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/NotoSansJP-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/NotoSansJP-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/NotoSansJP-Black.ttf
+          weight: 900
 
 dev_dependencies:
   bloc_test: ^10.0.0

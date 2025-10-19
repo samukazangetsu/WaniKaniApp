@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:wanikani_app/core/theme/theme.dart';
 import 'package:wanikani_app/features/home/presentation/cubits/home_cubit.dart';
 import 'package:wanikani_app/features/home/presentation/cubits/home_state.dart';
-import 'package:wanikani_app/features/home/presentation/widgets/dashboard_metric_card.dart';
 import 'package:wanikani_app/features/home/utils/home_strings.dart';
 
 /// Tela principal do dashboard WaniKani.
@@ -18,7 +18,18 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text(HomeStrings.appBarTitle), centerTitle: true),
+    backgroundColor: WaniKaniColors.background,
+    appBar: WaniKaniAppBar.root(
+      'おかえり', // "Welcome back" em japonês
+      actions: [
+        IconButton(
+          icon: Icon(Icons.settings_outlined),
+          onPressed: () {
+            // TODO: Navegar para configurações
+          },
+        ),
+      ],
+    ),
     body: BlocBuilder<HomeCubit, HomeState>(
       builder: (BuildContext context, HomeState state) => switch (state) {
         HomeInitial() => const SizedBox.shrink(),
@@ -27,12 +38,9 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Text(
-                HomeStrings.errorTitle,
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
+              Text(HomeStrings.errorTitle, style: WaniKaniTextStyles.h2),
               const SizedBox(height: 16),
-              Text(message),
+              Text(message, style: WaniKaniTextStyles.body),
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: () {
@@ -48,27 +56,45 @@ class HomeScreen extends StatelessWidget {
           :final int reviewCount,
           :final int lessonCount,
         ) =>
-          Padding(
-            padding: const EdgeInsets.all(16.0),
+          SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                DashboardMetricCard(
-                  title: HomeStrings.levelLabel,
-                  value: currentLevel.toString(),
-                  icon: Icons.grade,
+                SizedBox(height: WaniKaniDesign.spacingMd),
+
+                // Card de progresso do nível
+                LevelProgressCard(
+                  currentLevel: currentLevel,
+                  progress: 0.75, // 75% como na imagem
+                  totalItems: 20, // 20 itens como na imagem
+                  completedItems: 15, // 15 completados
+                  onTap: () {
+                    // TODO: Navegar para detalhes do nível
+                  },
                 ),
-                const SizedBox(height: 16),
-                DashboardMetricCard(
-                  title: HomeStrings.reviewsLabel,
+
+                SizedBox(height: WaniKaniDesign.spacingSm),
+
+                // Card de Reviews
+                StudyMetricCard.reviews(
                   value: reviewCount.toString(),
-                  icon: Icons.rate_review,
+                  enabled: reviewCount > 0,
+                  onTap: reviewCount > 0
+                      ? () {
+                          // TODO: Navegar para reviews
+                        }
+                      : null,
                 ),
-                const SizedBox(height: 16),
-                DashboardMetricCard(
-                  title: HomeStrings.lessonsLabel,
+
+                // Card de Lessons
+                StudyMetricCard.lessons(
                   value: lessonCount.toString(),
-                  icon: Icons.school,
+                  enabled: lessonCount > 0,
+                  onTap: lessonCount > 0
+                      ? () {
+                          // TODO: Navegar para lessons
+                        }
+                      : null,
                 ),
               ],
             ),

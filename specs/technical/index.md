@@ -87,6 +87,7 @@ Conhecimento de domínio e integrações externas.
 
 - 🌐 [Especificações da API WaniKani v2](API_SPECIFICATION.md) - Endpoints, autenticação e cache
 - 📊 [Lógica de Negócio](BUSINESS_LOGIC.md) - Conceitos de SRS e progressão (TO BE COMPLETED)
+- 🎨 [Design System](../design/DESIGN_SYSTEM.md) - Cores, tipografia, componentes e tema dark ✅
 
 ### Camada 4: Contexto do Fluxo de Desenvolvimento
 
@@ -109,6 +110,7 @@ Processos e workflows para contribuição e manutenção.
 | CLAUDE.meta.md | Desenvolvedores | Evolução de padrões |
 | CODEBASE_GUIDE.md | Desenvolvedores | Mudanças estruturais |
 | API_SPECIFICATION.md | Backend/Integração | Mudanças de API |
+| DESIGN_SYSTEM.md | UI/UX Designer/Dev | Mudanças visuais e de componentes |
 | CONTRIBUTING.md | Dev Lead | Mudanças de processo |
 | TROUBLESHOOTING.md | Time todo | Novos problemas identificados |
 
@@ -139,22 +141,25 @@ Atualizar documentação quando:
 ### Estrutura de Arquivos para Consumo pela IA
 
 ```
-specs/technical/                    # Documentação técnica principal
-├── index.md                       # Este arquivo - índice navegável
-├── project_charter.md             # Visão e escopo do projeto
-├── adr/                           # Decisões arquiteturais
-│   ├── 001-clean-architecture.md
-│   ├── 002-bloc-state-management.md
-│   ├── 003-offline-first-drift.md
-│   ├── 004-go-router-navigation.md
-│   └── 005-japanese-theme-design.md
-├── CLAUDE.meta.md                 # Guia de desenvolvimento IA
-├── CODEBASE_GUIDE.md              # Navegação de código
-├── API_SPECIFICATION.md           # Documentação API externa
-├── BUSINESS_LOGIC.md              # Lógica de domínio (TO DO)
-├── CONTRIBUTING.md                # Workflow de desenvolvimento
-├── TROUBLESHOOTING.md             # Solução de problemas
-└── ARCHITECTURE_CHALLENGES.md     # Desafios e melhorias
+specs/
+├── technical/                      # Documentação técnica principal
+│   ├── index.md                   # Este arquivo - índice navegável
+│   ├── project_charter.md         # Visão e escopo do projeto
+│   ├── adr/                       # Decisões arquiteturais
+│   │   ├── 001-clean-architecture.md
+│   │   ├── 002-bloc-state-management.md
+│   │   ├── 003-offline-first-drift.md
+│   │   ├── 004-go-router-navigation.md
+│   │   └── 005-japanese-theme-design.md
+│   ├── CLAUDE.meta.md             # Guia de desenvolvimento IA
+│   ├── CODEBASE_GUIDE.md          # Navegação de código
+│   ├── API_SPECIFICATION.md       # Documentação API externa
+│   ├── BUSINESS_LOGIC.md          # Lógica de domínio (TO DO)
+│   ├── CONTRIBUTING.md            # Workflow de desenvolvimento
+│   ├── TROUBLESHOOTING.md         # Solução de problemas
+│   └── ARCHITECTURE_CHALLENGES.md # Desafios e melhorias
+└── design/                        # Documentação de design
+    └── DESIGN_SYSTEM.md           # Design system completo ✅
 ```
 
 ### Configuração de Ferramentas IA
@@ -221,7 +226,8 @@ specs/technical/                    # Documentação técnica principal
 - [ ] Criar API_SPECIFICATION.md
 - [ ] Testar efetividade da IA com novo contexto
 
-### Fase 3: Contexto de Domínio 📋 PLANEJADO
+### Fase 3: Contexto de Domínio ✅ COMPLETA
+- [x] Documentar Design System (cores, tipografia, componentes)
 - [ ] Documentar lógica de negócio (SRS, progressão)
 - [ ] Criar workflows de usuário
 - [ ] Documentar casos extremos conhecidos
@@ -241,12 +247,14 @@ specs/technical/                    # Documentação técnica principal
 2. Leia [CODEBASE_GUIDE.md](CODEBASE_GUIDE.md) para navegar o código
 3. Configure ambiente usando [CONTRIBUTING.md](CONTRIBUTING.md)
 4. Consulte [CLAUDE.meta.md](CLAUDE.meta.md) para padrões de código
+5. Revise [Design System](../design/DESIGN_SYSTEM.md) para UI/UX guidelines
 
 ### Para IA/Copilot
 1. Carregue este `index.md` para contexto geral
 2. Referencie [CLAUDE.meta.md](CLAUDE.meta.md) para padrões de código
 3. Consulte ADRs específicos em `adr/` para decisões arquiteturais
 4. Use [API_SPECIFICATION.md](API_SPECIFICATION.md) para integrações
+5. Siga [Design System](../design/DESIGN_SYSTEM.md) para implementação de UI
 
 ### Para Troubleshooting
 1. Consulte [TROUBLESHOOTING.md](TROUBLESHOOTING.md) primeiro

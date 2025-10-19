@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wanikani_app/core/di/service_locator.dart';
+import 'package:wanikani_app/core/theme/theme.dart';
 import 'package:wanikani_app/routing/app_router.dart';
 
 /// Entrypoint da aplicação em modo PRODUÇÃO.
@@ -27,20 +28,8 @@ class WaniKaniApp extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp.router(
     title: 'WaniKani App',
     debugShowCheckedModeBanner: false,
-    theme: ThemeData(
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: Colors.deepPurple,
-        brightness: Brightness.light,
-      ),
-      useMaterial3: true,
-    ),
-    darkTheme: ThemeData(
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: Colors.deepPurple,
-        brightness: Brightness.dark,
-      ),
-      useMaterial3: true,
-    ),
+    theme: WaniKaniTheme.lightTheme,
+    darkTheme: WaniKaniTheme.darkTheme,
     routerConfig: AppRouter.router(),
   );
 }
