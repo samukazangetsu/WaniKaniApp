@@ -20,7 +20,7 @@ void main() {
   });
 
   group('GetAssignmentMetricsUseCase', () {
-    final List<AssignmentEntity> tAssignments = <AssignmentEntity>[
+    final tAssignments = <AssignmentEntity>[
       // Review disponível (availableAt no passado, startedAt != null)
       AssignmentEntity(
         id: 1,
@@ -104,7 +104,7 @@ void main() {
         ).thenAnswer((_) async => Right(tAssignments));
 
         // Act
-        final Either<IError, List<AssignmentEntity>> result = await useCase();
+        final result = await useCase();
 
         // Assert
         expect(
@@ -118,13 +118,13 @@ void main() {
 
     test('deve retornar erro quando repository retorna erro', () async {
       // Arrange
-      final InternalErrorEntity tError = InternalErrorEntity('Erro de rede');
+      final tError = InternalErrorEntity('Erro de rede');
       when(
         () => mockRepository.getAssignments(),
       ).thenAnswer((_) async => Left(tError));
 
       // Act
-      final Either<IError, List<AssignmentEntity>> result = await useCase();
+      final result = await useCase();
 
       // Assert
       expect(result, equals(Left<IError, List<AssignmentEntity>>(tError)));
@@ -138,7 +138,7 @@ void main() {
       ).thenAnswer((_) async => const Right(<AssignmentEntity>[]));
 
       // Act
-      final Either<IError, List<AssignmentEntity>> result = await useCase();
+      final result = await useCase();
 
       // Assert
       expect(

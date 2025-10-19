@@ -1,4 +1,3 @@
-import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -23,59 +22,58 @@ void main() {
   });
 
   group('getCurrentLevelProgression', () {
-    final List<Map<String, dynamic>> tLevelProgressionsData =
-        <Map<String, dynamic>>[
-          <String, dynamic>{
-            'id': 3557312,
-            'object': 'level_progression',
-            'data': <String, dynamic>{
-              'level': 1,
-              'unlocked_at': '2025-03-09T10:11:11.814388Z',
-              'started_at': '2025-03-09T10:17:23.016685Z',
-              'passed_at': '2025-04-10T15:21:50.960905Z',
-              'completed_at': null,
-              'abandoned_at': null,
-            },
-          },
-          <String, dynamic>{
-            'id': 3608058,
-            'object': 'level_progression',
-            'data': <String, dynamic>{
-              'level': 2,
-              'unlocked_at': '2025-04-10T15:21:50.981094Z',
-              'started_at': '2025-04-10T17:50:43.521981Z',
-              'passed_at': '2025-04-25T20:37:47.039562Z',
-              'completed_at': null,
-              'abandoned_at': null,
-            },
-          },
-          <String, dynamic>{
-            'id': 3691690,
-            'object': 'level_progression',
-            'data': <String, dynamic>{
-              'level': 4,
-              'unlocked_at': '2025-06-05T02:04:43.768478Z',
-              'started_at': '2025-06-05T04:44:18.785283Z',
-              'passed_at': null,
-              'completed_at': null,
-              'abandoned_at': null,
-            },
-          },
-          <String, dynamic>{
-            'id': 3631332,
-            'object': 'level_progression',
-            'data': <String, dynamic>{
-              'level': 3,
-              'unlocked_at': '2025-04-25T20:37:47.059316Z',
-              'started_at': '2025-04-26T22:45:52.061420Z',
-              'passed_at': '2025-06-05T02:04:43.747597Z',
-              'completed_at': null,
-              'abandoned_at': null,
-            },
-          },
-        ];
+    final tLevelProgressionsData = <Map<String, dynamic>>[
+      <String, dynamic>{
+        'id': 3557312,
+        'object': 'level_progression',
+        'data': <String, dynamic>{
+          'level': 1,
+          'unlocked_at': '2025-03-09T10:11:11.814388Z',
+          'started_at': '2025-03-09T10:17:23.016685Z',
+          'passed_at': '2025-04-10T15:21:50.960905Z',
+          'completed_at': null,
+          'abandoned_at': null,
+        },
+      },
+      <String, dynamic>{
+        'id': 3608058,
+        'object': 'level_progression',
+        'data': <String, dynamic>{
+          'level': 2,
+          'unlocked_at': '2025-04-10T15:21:50.981094Z',
+          'started_at': '2025-04-10T17:50:43.521981Z',
+          'passed_at': '2025-04-25T20:37:47.039562Z',
+          'completed_at': null,
+          'abandoned_at': null,
+        },
+      },
+      <String, dynamic>{
+        'id': 3691690,
+        'object': 'level_progression',
+        'data': <String, dynamic>{
+          'level': 4,
+          'unlocked_at': '2025-06-05T02:04:43.768478Z',
+          'started_at': '2025-06-05T04:44:18.785283Z',
+          'passed_at': null,
+          'completed_at': null,
+          'abandoned_at': null,
+        },
+      },
+      <String, dynamic>{
+        'id': 3631332,
+        'object': 'level_progression',
+        'data': <String, dynamic>{
+          'level': 3,
+          'unlocked_at': '2025-04-25T20:37:47.059316Z',
+          'started_at': '2025-04-26T22:45:52.061420Z',
+          'passed_at': '2025-06-05T02:04:43.747597Z',
+          'completed_at': null,
+          'abandoned_at': null,
+        },
+      },
+    ];
 
-    final Map<String, dynamic> tLevelProgressionsResponse = <String, dynamic>{
+    final tLevelProgressionsResponse = <String, dynamic>{
       'object': 'collection',
       'data': tLevelProgressionsData,
     };
@@ -93,8 +91,7 @@ void main() {
         );
 
         // Act
-        final Either<IError, LevelProgressionEntity> result = await repository
-            .getCurrentLevelProgression();
+        final result = await repository.getCurrentLevelProgression();
 
         // Assert
         expect(result.isRight(), true);
@@ -110,78 +107,71 @@ void main() {
       },
     );
 
-    test(
-      'deve retornar item anterior quando não há passed_at == null mas há unlocked_at == null',
-      () async {
-        // Arrange - todos os níveis passados, exceto o próximo não desbloqueado
-        final List<Map<String, dynamic>> tAllPassedLevels =
-            <Map<String, dynamic>>[
-              <String, dynamic>{
-                'id': 1,
-                'object': 'level_progression',
-                'data': <String, dynamic>{
-                  'level': 1,
-                  'unlocked_at': '2025-03-09T10:11:11.814388Z',
-                  'started_at': '2025-03-09T10:17:23.016685Z',
-                  'passed_at': '2025-04-10T15:21:50.960905Z',
-                  'completed_at': null,
-                  'abandoned_at': null,
-                },
-              },
-              <String, dynamic>{
-                'id': 2,
-                'object': 'level_progression',
-                'data': <String, dynamic>{
-                  'level': 2,
-                  'unlocked_at': '2025-04-10T15:21:50.981094Z',
-                  'started_at': '2025-04-10T17:50:43.521981Z',
-                  'passed_at': '2025-04-25T20:37:47.039562Z',
-                  'completed_at': null,
-                  'abandoned_at': null,
-                },
-              },
-              <String, dynamic>{
-                'id': 3,
-                'object': 'level_progression',
-                'data': <String, dynamic>{
-                  'level': 3,
-                  'unlocked_at': null, // Não desbloqueado
-                  'started_at': null,
-                  'passed_at': null,
-                  'completed_at': null,
-                  'abandoned_at': null,
-                },
-              },
-            ];
+    test('deve retornar item anterior quando não há passed_at '
+        '== null mas há unlocked_at == null', () async {
+      // Arrange - todos os níveis passados, exceto o próximo não desbloqueado
+      final tAllPassedLevels = <Map<String, dynamic>>[
+        <String, dynamic>{
+          'id': 1,
+          'object': 'level_progression',
+          'data': <String, dynamic>{
+            'level': 1,
+            'unlocked_at': '2025-03-09T10:11:11.814388Z',
+            'started_at': '2025-03-09T10:17:23.016685Z',
+            'passed_at': '2025-04-10T15:21:50.960905Z',
+            'completed_at': null,
+            'abandoned_at': null,
+          },
+        },
+        <String, dynamic>{
+          'id': 2,
+          'object': 'level_progression',
+          'data': <String, dynamic>{
+            'level': 2,
+            'unlocked_at': '2025-04-10T15:21:50.981094Z',
+            'started_at': '2025-04-10T17:50:43.521981Z',
+            'passed_at': '2025-04-25T20:37:47.039562Z',
+            'completed_at': null,
+            'abandoned_at': null,
+          },
+        },
+        <String, dynamic>{
+          'id': 3,
+          'object': 'level_progression',
+          'data': <String, dynamic>{
+            'level': 3,
+            'unlocked_at': null, // Não desbloqueado
+            'started_at': null,
+            'passed_at': null,
+            'completed_at': null,
+            'abandoned_at': null,
+          },
+        },
+      ];
 
-        when(() => mockDataSource.getLevelProgressions()).thenAnswer(
-          (_) async => Response<Map<String, dynamic>>(
-            requestOptions: RequestOptions(path: '/level_progressions'),
-            data: <String, dynamic>{
-              'object': 'collection',
-              'data': tAllPassedLevels,
-            },
-            statusCode: 200,
-          ),
-        );
+      when(() => mockDataSource.getLevelProgressions()).thenAnswer(
+        (_) async => Response<Map<String, dynamic>>(
+          requestOptions: RequestOptions(path: '/level_progressions'),
+          data: <String, dynamic>{
+            'object': 'collection',
+            'data': tAllPassedLevels,
+          },
+          statusCode: 200,
+        ),
+      );
 
-        // Act
-        final Either<IError, LevelProgressionEntity> result = await repository
-            .getCurrentLevelProgression();
+      // Act
+      final result = await repository.getCurrentLevelProgression();
 
-        // Assert
-        expect(result.isRight(), true);
-        result.fold((_) => fail('Should return Right'), (
-          LevelProgressionEntity entity,
-        ) {
-          expect(
-            entity.level,
-            equals(2),
-          ); // Item anterior ao unlocked_at == null
-          expect(entity.passedAt, isNotNull); // Nível 2 foi passado
-        });
-      },
-    );
+      // Assert
+      expect(result.isRight(), true);
+      result.fold((_) => fail('Should return Right'), (
+        LevelProgressionEntity entity,
+      ) {
+        expect(entity.level, equals(2)); // Item anterior ao unlocked_at == null
+        expect(entity.passedAt, isNotNull); // Nível 2 foi passado
+      });
+    });
 
     test('deve retornar erro quando lista de progressões está vazia', () async {
       // Arrange
@@ -197,8 +187,7 @@ void main() {
       );
 
       // Act
-      final Either<IError, LevelProgressionEntity> result = await repository
-          .getCurrentLevelProgression();
+      final result = await repository.getCurrentLevelProgression();
 
       // Assert
       expect(result.isLeft(), true);
@@ -219,8 +208,7 @@ void main() {
       );
 
       // Act
-      final Either<IError, LevelProgressionEntity> result = await repository
-          .getCurrentLevelProgression();
+      final result = await repository.getCurrentLevelProgression();
 
       // Assert
       expect(result.isLeft(), true);
@@ -237,8 +225,7 @@ void main() {
       ).thenThrow(Exception('Network error'));
 
       // Act
-      final Either<IError, LevelProgressionEntity> result = await repository
-          .getCurrentLevelProgression();
+      final result = await repository.getCurrentLevelProgression();
 
       // Assert
       expect(result.isLeft(), true);
@@ -249,7 +236,7 @@ void main() {
   });
 
   group('getAssignments', () {
-    final List<Map<String, dynamic>> tAssignmentsData = <Map<String, dynamic>>[
+    final tAssignmentsData = <Map<String, dynamic>>[
       <String, dynamic>{
         'id': 1,
         'data': <String, dynamic>{
@@ -278,7 +265,7 @@ void main() {
       },
     ];
 
-    final Map<String, dynamic> tAssignmentsResponse = <String, dynamic>{
+    final tAssignmentsResponse = <String, dynamic>{
       'object': 'collection',
       'data': tAssignmentsData,
     };
@@ -296,8 +283,7 @@ void main() {
         );
 
         // Act
-        final Either<IError, List<AssignmentEntity>> result = await repository
-            .getAssignments();
+        final result = await repository.getAssignments();
 
         // Assert
         expect(result.isRight(), true);
@@ -328,8 +314,7 @@ void main() {
       );
 
       // Act
-      final Either<IError, List<AssignmentEntity>> result = await repository
-          .getAssignments();
+      final result = await repository.getAssignments();
 
       // Assert
       expect(result.isRight(), true);
@@ -351,8 +336,7 @@ void main() {
       );
 
       // Act
-      final Either<IError, List<AssignmentEntity>> result = await repository
-          .getAssignments();
+      final result = await repository.getAssignments();
 
       // Assert
       expect(result.isLeft(), true);
@@ -369,8 +353,7 @@ void main() {
       ).thenThrow(Exception('Parse error'));
 
       // Act
-      final Either<IError, List<AssignmentEntity>> result = await repository
-          .getAssignments();
+      final result = await repository.getAssignments();
 
       // Assert
       expect(result.isLeft(), true);

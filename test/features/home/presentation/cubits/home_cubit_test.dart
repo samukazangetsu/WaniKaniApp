@@ -35,7 +35,7 @@ void main() {
     cubit.close();
   });
 
-  final LevelProgressionEntity tLevelProgression = LevelProgressionEntity(
+  final tLevelProgression = LevelProgressionEntity(
     id: 1,
     level: 4,
     unlockedAt: DateTime(2025, 6, 5),
@@ -45,7 +45,7 @@ void main() {
     abandonedAt: null,
   );
 
-  final List<AssignmentEntity> tAssignments = <AssignmentEntity>[
+  final tAssignments = <AssignmentEntity>[
     AssignmentEntity(
       id: 1,
       subjectId: 100,
@@ -155,9 +155,9 @@ void main() {
       },
       act: (HomeCubit cubit) => cubit.loadDashboardData(),
       verify: (_) {
-        final HomeState state = cubit.state;
+        final state = cubit.state;
         expect(state, isA<HomeLoaded>());
-        final HomeLoaded loadedState = state as HomeLoaded;
+        final loadedState = state as HomeLoaded;
         expect(loadedState.currentLevel, equals(4));
         expect(loadedState.reviewCount, equals(1)); // 1 review disponível
         expect(loadedState.lessonCount, equals(1)); // 1 lição disponível

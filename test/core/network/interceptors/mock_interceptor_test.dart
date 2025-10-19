@@ -20,10 +20,10 @@ void main() {
       'deve retornar mock de assignments quando path contém "assignments"',
       () async {
         // Arrange
-        const String expectedPath = '/assignments';
+        const expectedPath = '/assignments';
 
         // Act
-        final Response<dynamic> response = await dio.get<dynamic>(expectedPath);
+        final response = await dio.get<dynamic>(expectedPath);
 
         // Assert
         expect(response.statusCode, equals(200));
@@ -36,10 +36,10 @@ void main() {
     test('deve retornar mock de level_progressions quando '
         'path contém "level_progressions"', () async {
       // Arrange
-      const String expectedPath = '/level_progressions';
+      const expectedPath = '/level_progressions';
 
       // Act
-      final Response<dynamic> response = await dio.get<dynamic>(expectedPath);
+      final response = await dio.get<dynamic>(expectedPath);
 
       // Assert
       expect(response.statusCode, equals(200));
@@ -50,8 +50,8 @@ void main() {
 
     test('deve simular delay de rede de aproximadamente 500ms', () async {
       // Arrange
-      const String path = '/assignments';
-      final Stopwatch stopwatch = Stopwatch()..start();
+      const path = '/assignments';
+      final stopwatch = Stopwatch()..start();
 
       // Act
       await dio.get<dynamic>(path);
@@ -67,7 +67,7 @@ void main() {
 
     test('deve rejeitar quando mock não existe', () async {
       // Arrange
-      const String invalidPath = '/invalid_endpoint';
+      const invalidPath = '/invalid_endpoint';
 
       // Act & Assert
       expect(() => dio.get<dynamic>(invalidPath), throwsA(isA<DioException>()));
@@ -75,10 +75,10 @@ void main() {
 
     test('deve preservar requestOptions no response', () async {
       // Arrange
-      const String path = '/assignments';
+      const path = '/assignments';
 
       // Act
-      final Response<dynamic> response = await dio.get<dynamic>(path);
+      final response = await dio.get<dynamic>(path);
 
       // Assert
       expect(response.requestOptions.path, equals(path));

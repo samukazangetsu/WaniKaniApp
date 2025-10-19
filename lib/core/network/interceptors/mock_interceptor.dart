@@ -9,12 +9,12 @@ import 'package:flutter/services.dart';
 /// Utilizado em `main_mock.dart` para desenvolvimento offline.
 class MockInterceptor extends Interceptor {
   @override
-  void onRequest(
+  Future<void> onRequest(
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
     // Determinar qual mock usar baseado no path
-    final String? mockPath = _getMockPath(options.path);
+    final mockPath = _getMockPath(options.path);
 
     if (mockPath == null) {
       handler.reject(
@@ -29,11 +29,10 @@ class MockInterceptor extends Interceptor {
 
     try {
       // Ler JSON do asset
-      final String jsonString = await rootBundle.loadString(
+      final jsonString = await rootBundle.loadString(
         'assets/mock/$mockPath.json',
       );
-      final Map<String, dynamic> data =
-          jsonDecode(jsonString) as Map<String, dynamic>;
+      final data = jsonDecode(jsonString) as Map<String, dynamic>;
 
       // Simular delay de rede realista
       await Future<void>.delayed(const Duration(milliseconds: 500));

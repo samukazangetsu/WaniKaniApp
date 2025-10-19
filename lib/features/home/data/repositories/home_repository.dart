@@ -1,5 +1,4 @@
 import 'package:dartz/dartz.dart';
-import 'package:dio/dio.dart';
 import 'package:wanikani_app/core/error/api_error_entity.dart';
 import 'package:wanikani_app/core/error/ierror.dart';
 import 'package:wanikani_app/core/error/internal_error_entity.dart';
@@ -26,11 +25,10 @@ class HomeRepository implements IHomeRepository {
   Future<Either<IError, LevelProgressionEntity>>
   getCurrentLevelProgression() async {
     try {
-      final Response<dynamic> response = await _datasource
-          .getLevelProgressions();
+      final response = await _datasource.getLevelProgressions();
 
       if (response.statusCode == 200) {
-        final List<dynamic> data =
+        final data =
             (response.data as Map<String, dynamic>)['data'] as List<dynamic>;
 
         if (data.isEmpty) {
@@ -58,17 +56,19 @@ class HomeRepository implements IHomeRepository {
         // 2. OU item anterior ao que tem unlocked_at == null
         LevelProgressionEntity? currentLevel;
 
-        // Regra 1: Procurar primeiro nível com passed_at == null E unlocked_at != null
-        for (final LevelProgressionEntity progression in progressions) {
+        // Regra 1: Procurar primeiro nível com
+        //passed_at == null E unlocked_at != null
+        for (final progression in progressions) {
           if (progression.passedAt == null && progression.unlockedAt != null) {
             currentLevel = progression;
             break;
           }
         }
 
-        // Regra 2: Se não encontrou, procurar item anterior ao unlocked_at == null
+        // Regra 2: Se não encontrou, procurar item
+        // anterior ao unlocked_at == null
         if (currentLevel == null) {
-          for (int i = 0; i < progressions.length; i++) {
+          for (var i = 0; i < progressions.length; i++) {
             if (progressions[i].unlockedAt == null && i > 0) {
               currentLevel = progressions[i - 1];
               break;
@@ -78,7 +78,7 @@ class HomeRepository implements IHomeRepository {
 
         // Se ainda não encontrou, pegar o último nível com unlocked_at != null
         if (currentLevel == null) {
-          for (int i = progressions.length - 1; i >= 0; i--) {
+          for (var i = progressions.length - 1; i >= 0; i--) {
             if (progressions[i].unlockedAt != null) {
               currentLevel = progressions[i];
               break;
@@ -108,15 +108,16 @@ class HomeRepository implements IHomeRepository {
   @override
   Future<Either<IError, List<AssignmentEntity>>> getAssignments() async {
     try {
-      final Response<dynamic> response = await _datasource.getAssignments();
+      final response = await _datasource.getAssignments();
 
       if (response.statusCode == 200) {
-        final List<dynamic> data =
+        final data =
             (response.data as Map<String, dynamic>)['data'] as List<dynamic>;
 
         final List<AssignmentEntity> assignments = data
             .map(
-              (json) => AssignmentModel.fromJson(json as Map<String, dynamic>),
+              (dynamic json) =>
+                  AssignmentModel.fromJson(json as Map<String, dynamic>),
             )
             .toList();
 

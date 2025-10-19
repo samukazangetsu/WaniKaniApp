@@ -38,8 +38,8 @@ void setupDependencies({required bool useMock}) {
           connectTimeout: const Duration(seconds: 30),
           receiveTimeout: const Duration(seconds: 30),
           headers: <String, String>{
-            'Authorization':
-                'Bearer 9b7c4629-4cc5-4ebb-98ad-8c33608cb455', // TODO: Mover para secure storage
+            // TODO: Mover para secure storage
+            'Authorization': 'Bearer 9b7c4629-4cc5-4ebb-98ad-8c33608cb455',
           },
         ),
       ),

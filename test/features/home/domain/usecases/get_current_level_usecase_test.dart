@@ -20,7 +20,7 @@ void main() {
   });
 
   group('GetCurrentLevelUseCase', () {
-    final LevelProgressionEntity tCurrentLevel = LevelProgressionEntity(
+    final tCurrentLevel = LevelProgressionEntity(
       id: 3691690,
       level: 4,
       unlockedAt: DateTime(2025, 6, 5, 2, 4, 43),
@@ -30,36 +30,34 @@ void main() {
       abandonedAt: null,
     );
 
-    test(
-      'deve retornar progressão do nível atual quando repository retorna sucesso',
-      () async {
-        // Arrange
-        when(
-          () => mockRepository.getCurrentLevelProgression(),
-        ).thenAnswer((_) async => Right(tCurrentLevel));
+    test('deve retornar progressão do nível atual '
+        'quando repository retorna sucesso', () async {
+      // Arrange
+      when(
+        () => mockRepository.getCurrentLevelProgression(),
+      ).thenAnswer((_) async => Right(tCurrentLevel));
 
-        // Act
-        final Either<IError, LevelProgressionEntity> result = await useCase();
+      // Act
+      final result = await useCase();
 
-        // Assert
-        expect(
-          result,
-          equals(Right<IError, LevelProgressionEntity>(tCurrentLevel)),
-        );
-        verify(() => mockRepository.getCurrentLevelProgression()).called(1);
-        verifyNoMoreInteractions(mockRepository);
-      },
-    );
+      // Assert
+      expect(
+        result,
+        equals(Right<IError, LevelProgressionEntity>(tCurrentLevel)),
+      );
+      verify(() => mockRepository.getCurrentLevelProgression()).called(1);
+      verifyNoMoreInteractions(mockRepository);
+    });
 
     test('deve retornar erro quando repository retorna erro', () async {
       // Arrange
-      final InternalErrorEntity tError = InternalErrorEntity('Erro de rede');
+      final tError = InternalErrorEntity('Erro de rede');
       when(
         () => mockRepository.getCurrentLevelProgression(),
       ).thenAnswer((_) async => Left(tError));
 
       // Act
-      final Either<IError, LevelProgressionEntity> result = await useCase();
+      final result = await useCase();
 
       // Assert
       expect(result, equals(Left<IError, LevelProgressionEntity>(tError)));

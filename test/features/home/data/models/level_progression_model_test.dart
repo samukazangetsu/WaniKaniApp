@@ -4,7 +4,7 @@ import 'package:wanikani_app/features/home/domain/entities/level_progression_ent
 
 void main() {
   group('LevelProgressionModel', () {
-    final Map<String, dynamic> tJson = <String, dynamic>{
+    final tJson = <String, dynamic>{
       'id': 3691690,
       'object': 'level_progression',
       'url': 'https://api.wanikani.com/v2/level_progressions/3691690',
@@ -20,7 +20,7 @@ void main() {
       },
     };
 
-    final LevelProgressionEntity tEntity = LevelProgressionEntity(
+    final tEntity = LevelProgressionEntity(
       id: 3691690,
       level: 4,
       unlockedAt: DateTime.parse('2025-06-05T02:04:43.768478Z'),
@@ -32,7 +32,7 @@ void main() {
 
     test('deve criar model a partir de JSON', () {
       // Act
-      final LevelProgressionModel model = LevelProgressionModel.fromJson(tJson);
+      final model = LevelProgressionModel.fromJson(tJson);
 
       // Assert
       expect(model.id, equals(3691690));
@@ -52,7 +52,7 @@ void main() {
 
     test('deve implementar LevelProgressionEntity', () {
       // Arrange
-      final LevelProgressionModel model = LevelProgressionModel.fromJson(tJson);
+      final model = LevelProgressionModel.fromJson(tJson);
 
       // Assert
       expect(model, isA<LevelProgressionEntity>());
@@ -60,7 +60,7 @@ void main() {
 
     test('deve ter acesso às propriedades da entity', () {
       // Arrange
-      final LevelProgressionModel model = LevelProgressionModel.fromJson(tJson);
+      final model = LevelProgressionModel.fromJson(tJson);
 
       // Assert - computed properties da entity devem funcionar
       expect(
@@ -73,10 +73,10 @@ void main() {
 
     test('deve converter para JSON', () {
       // Arrange
-      final LevelProgressionModel model = LevelProgressionModel(tEntity);
+      final model = LevelProgressionModel(tEntity);
 
       // Act
-      final Map<String, dynamic> json = model.toJson();
+      final json = model.toJson();
 
       // Assert
       expect(json['id'], equals(3691690));
@@ -96,7 +96,7 @@ void main() {
 
     test('deve lidar com campos nullable no JSON', () {
       // Arrange
-      final Map<String, dynamic> tJsonWithNulls = <String, dynamic>{
+      final tJsonWithNulls = <String, dynamic>{
         'id': 1,
         'object': 'level_progression',
         'data': <String, dynamic>{
@@ -110,9 +110,7 @@ void main() {
       };
 
       // Act
-      final LevelProgressionModel model = LevelProgressionModel.fromJson(
-        tJsonWithNulls,
-      );
+      final model = LevelProgressionModel.fromJson(tJsonWithNulls);
 
       // Assert
       expect(model.id, equals(1));

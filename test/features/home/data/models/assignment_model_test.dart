@@ -4,7 +4,7 @@ import 'package:wanikani_app/features/home/domain/entities/assignment_entity.dar
 
 void main() {
   group('AssignmentModel', () {
-    final Map<String, dynamic> tJson = <String, dynamic>{
+    final tJson = <String, dynamic>{
       'id': 526070297,
       'object': 'assignment',
       'url': 'https://api.wanikani.com/v2/assignments/526070297',
@@ -24,7 +24,7 @@ void main() {
       },
     };
 
-    final AssignmentEntity tEntity = AssignmentEntity(
+    final tEntity = AssignmentEntity(
       id: 526070297,
       subjectId: 16,
       subjectType: 'radical',
@@ -38,7 +38,7 @@ void main() {
 
     test('deve criar model a partir de JSON', () {
       // Act
-      final AssignmentModel model = AssignmentModel.fromJson(tJson);
+      final model = AssignmentModel.fromJson(tJson);
 
       // Assert
       expect(model.id, equals(526070297));
@@ -63,7 +63,7 @@ void main() {
 
     test('deve implementar AssignmentEntity', () {
       // Arrange
-      final AssignmentModel model = AssignmentModel.fromJson(tJson);
+      final model = AssignmentModel.fromJson(tJson);
 
       // Assert
       expect(model, isA<AssignmentEntity>());
@@ -71,7 +71,7 @@ void main() {
 
     test('deve ter acesso às propriedades da entity', () {
       // Arrange
-      final AssignmentModel model = AssignmentModel.fromJson(tJson);
+      final model = AssignmentModel.fromJson(tJson);
 
       // Assert - computed properties da entity devem funcionar
       expect(model.isBurned, isFalse); // srsStage == 8, não 9
@@ -80,10 +80,10 @@ void main() {
 
     test('deve converter para JSON', () {
       // Arrange
-      final AssignmentModel model = AssignmentModel(tEntity);
+      final model = AssignmentModel(tEntity);
 
       // Act
-      final Map<String, dynamic> json = model.toJson();
+      final json = model.toJson();
 
       // Assert
       expect(json['id'], equals(526070297));
@@ -107,7 +107,7 @@ void main() {
 
     test('deve lidar com campos nullable no JSON', () {
       // Arrange
-      final Map<String, dynamic> tJsonWithNulls = <String, dynamic>{
+      final tJsonWithNulls = <String, dynamic>{
         'id': 1,
         'object': 'assignment',
         'data': <String, dynamic>{
@@ -123,7 +123,7 @@ void main() {
       };
 
       // Act
-      final AssignmentModel model = AssignmentModel.fromJson(tJsonWithNulls);
+      final model = AssignmentModel.fromJson(tJsonWithNulls);
 
       // Assert
       expect(model.id, equals(1));
@@ -137,7 +137,7 @@ void main() {
 
     test('deve identificar lição corretamente', () {
       // Arrange - lição não iniciada
-      final Map<String, dynamic> tLessonJson = <String, dynamic>{
+      final tLessonJson = <String, dynamic>{
         'id': 2,
         'data': <String, dynamic>{
           'subject_id': 200,
@@ -152,7 +152,7 @@ void main() {
       };
 
       // Act
-      final AssignmentModel model = AssignmentModel.fromJson(tLessonJson);
+      final model = AssignmentModel.fromJson(tLessonJson);
 
       // Assert
       expect(model.isLesson, isTrue); // unlockedAt = true && startedAt = null
