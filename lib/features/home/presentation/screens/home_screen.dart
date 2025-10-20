@@ -54,20 +54,30 @@ class _HomeScreenState extends State<HomeScreen> {
         HomeInitial() => const SizedBox.shrink(),
         HomeLoading() => const Center(child: CircularProgressIndicator()),
         HomeError(:final String message) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Text(HomeStrings.errorTitle, style: WaniKaniTextStyles.h2),
-              const SizedBox(height: 16),
-              Text(message, style: WaniKaniTextStyles.body),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () {
-                  context.read<HomeCubit>().loadDashboardData();
-                },
-                child: Text(HomeStrings.retryButton),
-              ),
-            ],
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: WaniKaniDesign.spacingMd),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text(HomeStrings.errorTitle, style: WaniKaniTextStyles.h2),
+                const SizedBox(height: 16),
+                Text(
+                  message,
+                  style: WaniKaniTextStyles.body,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      context.read<HomeCubit>().loadDashboardData();
+                    },
+                    child: Text(HomeStrings.retryButton),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         HomeLoaded(
