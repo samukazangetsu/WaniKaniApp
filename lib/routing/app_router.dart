@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:wanikani_app/core/di/service_locator.dart';
+import 'package:wanikani_app/core/dependency_injection/dependency_injection.dart';
 import 'package:wanikani_app/features/home/presentation/cubits/home_cubit.dart';
 import 'package:wanikani_app/features/home/presentation/screens/home_screen.dart';
+import 'package:wanikani_app/routing/app_routes.dart';
 
 /// Configuração de rotas da aplicação usando go_router.
 mixin AppRouter {
   static GoRouter router({String? initialLocation}) => GoRouter(
-    initialLocation: initialLocation ?? '/',
+    initialLocation: initialLocation ?? AppRoutes.home.path,
     routes: <RouteBase>[
       GoRoute(
-        path: '/',
-        name: 'home',
+        path: AppRoutes.home.path,
+        name: AppRoutes.home.name,
         builder: (BuildContext context, GoRouterState state) =>
             BlocProvider<HomeCubit>.value(
               value: getIt<HomeCubit>(),

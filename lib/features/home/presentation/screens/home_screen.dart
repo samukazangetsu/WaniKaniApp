@@ -38,10 +38,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: WaniKaniColors.background,
     appBar: WaniKaniAppBar.root(
-      'おかえり', // "Welcome back" em japonês
+      HomeStrings.greetingWelcomeBack,
       actions: [
         IconButton(
           icon: Icon(Icons.settings_outlined),
+          tooltip: HomeStrings.settingsTooltip,
           onPressed: () {
             // TODO: Navegar para configurações
           },

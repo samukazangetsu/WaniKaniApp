@@ -4,6 +4,7 @@ import 'package:wanikani_app/features/home/domain/usecases/get_current_level_use
 import 'package:wanikani_app/features/home/domain/usecases/get_lesson_stats_usecase.dart';
 import 'package:wanikani_app/features/home/domain/usecases/get_review_stats_usecase.dart';
 import 'package:wanikani_app/features/home/presentation/cubits/home_state.dart';
+import 'package:wanikani_app/features/home/utils/home_strings.dart';
 
 /// Cubit para gerenciar o estado da HomeScreen.
 ///
@@ -60,7 +61,7 @@ class HomeCubit extends Cubit<HomeState> {
     if (levelProgression == null &&
         reviewCount == null &&
         lessonCount == null) {
-      emit(const HomeError('Não foi possível carregar os dados do dashboard'));
+      emit(HomeError(HomeStrings.errorDashboardLoad));
       return;
     }
 

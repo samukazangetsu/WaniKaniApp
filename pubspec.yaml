@@ -30,6 +30,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_bloc: ^9.1.1
+  logger: ^2.0.0           # Logging estruturado e colorido
   # Networking
   
   # Storage/Cache

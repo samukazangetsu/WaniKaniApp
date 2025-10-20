@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:wanikani_app/core/di/service_locator.dart';
+import 'package:wanikani_app/core/dependency_injection/dependency_injection.dart';
 import 'package:wanikani_app/core/theme/theme.dart';
 import 'package:wanikani_app/routing/app_router.dart';
 

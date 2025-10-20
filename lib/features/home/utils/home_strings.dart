@@ -6,6 +6,9 @@ class HomeStrings {
   /// Título da AppBar.
   static const String appBarTitle = 'WaniKani';
 
+  /// Saudação na AppBar (japonês: "Bem-vindo de volta").
+  static const String greetingWelcomeBack = 'おかえり';
+
   /// Label do card de nível.
   static const String levelLabel = 'Nível';
 
@@ -21,6 +24,14 @@ class HomeStrings {
   /// Mensagem genérica de erro.
   static const String errorMessage = 'Não foi possível carregar os dados';
 
+  /// Mensagem de erro quando dashboard não carrega.
+  static const String errorDashboardLoad =
+      'Não foi possível carregar os dados do dashboard';
+
+  /// Mensagem quando nenhuma progressão de nível foi encontrada.
+  static const String errorNoLevelProgression =
+      'Nenhuma progressão de nível encontrada';
+
   /// Botão para tentar novamente.
   static const String retryButton = 'Tentar Novamente';
 
@@ -29,4 +40,7 @@ class HomeStrings {
 
   /// Mensagem de erro desconhecido (usado no cubit).
   static const String unknownError = 'Erro desconhecido';
+
+  /// Tooltip do botão de configurações.
+  static const String settingsTooltip = 'Configurações';
 }
