@@ -67,13 +67,24 @@ dart run build_runner build --delete-conflicting-outputs
 flutter analyze
 ```
 
-## 📱 Funcionalidades Implementadas
+## 📱 Funcionalidades
 
+### Implementadas
 - ✅ Dashboard com nível atual, reviews e lessons
-- 🚧 Sistema de reviews (em desenvolvimento)
-- 🚧 Sistema de lessons (em desenvolvimento)
-- 🚧 Estatísticas detalhadas (planejado)
-- 🚧 Modo offline completo (planejado)
+- ✅ Modo mock para desenvolvimento offline
+- ✅ Logging estruturado de requisições/respostas
+
+### Em Desenvolvimento
+- 🚧 Sistema de reviews interativo
+- 🚧 Sistema de lessons com progressão
+- 🚧 Modo offline completo com sincronização
+
+### Planejadas
+- � Estatísticas detalhadas de progresso
+- 📋 Gráficos de desempenho por tipo de item
+- 📋 Sistema de notificações para reviews disponíveis
+- � **Toggle de idioma**: Alternar entre japonês e idioma regional do sistema
+- 📋 Temas personalizáveis (claro/escuro/automático)
 
 ## 📄 Licença
 
