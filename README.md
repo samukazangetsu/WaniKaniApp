@@ -5,9 +5,10 @@ Um cliente alternativo para o [WaniKani](https://www.wanikani.com/), plataforma 
 ## 🤖 Desenvolvido com IA
 
 Este projeto é desenvolvido 100% com auxílio de Inteligência Artificial, utilizando:
-- **GitHub Copilot** para sugestões de código
-- **Claude** (Anthropic) para arquitetura e refatorações
-- **Cursor/Windsurf** para desenvolvimento assistido
+- **GitHub Copilot** para sugestões de código e autocompletar
+- **Claude 4.5 Sonnet** (Anthropic) via API para arquitetura, refatorações e pair programming
+- **VS Code** como IDE principal com extensões de IA integradas
+- **Chat GPT-4** (OpenAI) para consultas pontuais e documentação
 
 ## 🎯 Objetivo
 
