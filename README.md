@@ -42,8 +42,8 @@ Para informações técnicas completas, consulte:
 ## 🛠️ Setup e Execução
 
 ### Pré-requisitos
-- Flutter SDK 3.8.0+
-- Dart SDK 3.8.0+
+- Flutter SDK 3+
+- Dart SDK 3+
 
 ### Comandos Úteis
 
