@@ -7,6 +7,11 @@ import 'package:wanikani_app/routing/app_router.dart';
 ///
 /// Conecta com a API real da WaniKani usando token de autenticação.
 ///
+/// Fluxo de inicialização:
+/// 1. Configurar dependências
+/// 2. Iniciar na tela de loading que verifica token salvo
+/// 3. Loading redireciona para /login ou /home conforme necessário
+///
 /// Para executar:
 /// ```
 /// flutter run

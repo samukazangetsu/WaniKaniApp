@@ -73,7 +73,7 @@ class GetAssignmentsUseCase {
 // Cubit (presentation layer)
 Future<void> loadAssignments() async {
   emit(AssignmentLoading());
-  final result = await _loadAssignmentsData();
+  final result = await _getAssignmentsUseCase();
   result.fold(
     (error) => emit(AssignmentError(error.message)),
     (assignments) => emit(AssignmentLoaded(assignments)),
@@ -83,8 +83,8 @@ Future<void> loadAssignments() async {
 
 **SOLID Principles in Cubits:**
 - **Single Responsibility:** Each method handles one specific task
-- **Separation of Concerns:** Public methods orchestrate, private methods execute
-- **Direct fold() usage:** Always use fold() to handle Either results, never check isLeft() then fold()
+- **Direct calls:** Call use cases directly, avoid wrapper methods
+- **Direct fold() usage:** Always use fold() to handle Either results
 - **No nested conditionals:** Use fold() chaining for multiple Either results
 
 ## Entity ↔ Model Pattern

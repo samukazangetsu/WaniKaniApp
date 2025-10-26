@@ -12,8 +12,14 @@
 /// )
 /// ```
 enum AppRoutes {
-  /// Rota inicial - Home/Dashboard.
-  home('/');
+  /// Tela de loading - verificação inicial de token.
+  loading('/'),
+
+  /// Tela de login - autenticação com token API.
+  login('/login'),
+
+  /// Home/Dashboard - tela principal após login.
+  home('/home');
 
   // [FUTURAS - Preparadas para expansão]
   // /// Tela de reviews.

@@ -8,6 +8,11 @@ import 'package:wanikani_app/routing/app_router.dart';
 /// Utiliza dados mockados de `assets/mock/` para desenvolvimento
 /// sem necessidade de conexão com a API real da WaniKani.
 ///
+/// Fluxo de inicialização:
+/// 1. Configurar dependências em modo mock
+/// 2. Iniciar na tela de loading que verifica token salvo
+/// 3. Loading redireciona para /login ou /home conforme necessário
+///
 /// Para executar:
 /// ```
 /// flutter run -t lib/main_mock.dart

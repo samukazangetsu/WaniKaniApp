@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:wanikani_app/core/dependency_injection/core_di.dart';
 import 'package:wanikani_app/core/dependency_injection/features/home_di.dart';
+import 'package:wanikani_app/features/login/login_di.dart';
 
 /// Instância global do GetIt para dependency injection.
 final GetIt getIt = GetIt.instance;
@@ -10,8 +11,8 @@ final GetIt getIt = GetIt.instance;
 /// Deve ser chamado em `main()` antes de `runApp()`.
 ///
 /// Orquestra a inicialização de:
-/// 1. Core dependencies (Dio, Interceptors)
-/// 2. Feature dependencies (Home, Reviews, Lessons, etc.)
+/// 1. Core dependencies (Dio, Interceptors, LocalDataManager)
+/// 2. Feature dependencies (Login, Home, Reviews, Lessons, etc.)
 ///
 /// Parâmetros:
 /// - [useMock]: Se `true`, configura Dio com MockInterceptor.
@@ -26,10 +27,11 @@ final GetIt getIt = GetIt.instance;
 /// }
 /// ```
 void setupDependencies({required bool useMock}) {
-  // 1. Core (Dio, Interceptors)
+  // 1. Core (Dio, Interceptors, LocalDataManager)
   setupCoreDependencies(getIt: getIt, useMock: useMock);
 
   // 2. Features
+  setupLoginDependencies(getIt: getIt);
   setupHomeDependencies(getIt: getIt);
 
   // [FUTURO] Adicionar outras features aqui:
