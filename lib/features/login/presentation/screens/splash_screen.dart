@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wanikani_app/core/theme/theme.dart';
-import 'package:wanikani_app/features/login/presentation/cubits/loading_cubit.dart';
-import 'package:wanikani_app/features/login/presentation/cubits/loading_state.dart';
+import 'package:wanikani_app/features/login/presentation/cubits/splash_cubit.dart';
+import 'package:wanikani_app/features/login/presentation/cubits/splash_state.dart';
 import 'package:wanikani_app/features/login/utils/login_strings.dart';
 import 'package:wanikani_app/routing/app_routes.dart';
 
-/// Tela de loading exibida durante validação do token.
+/// Tela de splash exibida durante validação do token.
 ///
 /// Mostra:
 /// - Logo/título do app
@@ -17,14 +17,14 @@ import 'package:wanikani_app/routing/app_routes.dart';
 /// Navega automaticamente para:
 /// - Home se token for válido
 /// - Login se token for inválido ou não existir
-class LoadingScreen extends StatefulWidget {
-  const LoadingScreen({super.key});
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
 
   @override
-  State<LoadingScreen> createState() => _LoadingScreenState();
+  State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _LoadingScreenState extends State<LoadingScreen>
+class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
@@ -41,7 +41,7 @@ class _LoadingScreenState extends State<LoadingScreen>
 
     // Verifica token salvo após o build
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<LoadingCubit>().checkSavedToken();
+      context.read<SplashCubit>().checkSavedToken();
     });
   }
 
@@ -55,15 +55,15 @@ class _LoadingScreenState extends State<LoadingScreen>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return BlocListener<LoadingCubit, LoadingState>(
+    return BlocListener<SplashCubit, SplashState>(
       listener: (context, state) {
         // Navega para home se validação for bem-sucedida
-        if (state is LoadingSuccess) {
+        if (state is SplashSuccess) {
           context.go(AppRoutes.home.path);
         }
 
         // Navega para login se não houver token ou for inválido
-        if (state is LoadingError || state is LoadingNoToken) {
+        if (state is SplashError || state is SplashNoToken) {
           context.go(AppRoutes.login.path);
         }
       },

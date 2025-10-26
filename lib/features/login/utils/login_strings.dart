@@ -54,12 +54,12 @@ class LoginStrings {
   /// Botão para fechar tutorial.
   static const String tutorialClose = 'Voltar para a tela de login';
 
-  // === LoadingScreen ===
+  // === SplashScreen ===
 
-  /// Título do app na tela de loading.
+  /// Título do app na tela de splash.
   static const String loadingAppTitle = 'WaniKani';
 
-  /// Subtítulo em japonês na tela de loading.
+  /// Subtítulo em japonês na tela de splash.
   static const String loadingSubtitle = '日本語を学ぼう';
 
   /// Mensagem de carregamento.

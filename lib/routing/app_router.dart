@@ -4,10 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:wanikani_app/core/dependency_injection/dependency_injection.dart';
 import 'package:wanikani_app/features/home/presentation/cubits/home_cubit.dart';
 import 'package:wanikani_app/features/home/presentation/screens/home_screen.dart';
-import 'package:wanikani_app/features/login/presentation/cubits/loading_cubit.dart';
 import 'package:wanikani_app/features/login/presentation/cubits/login_cubit.dart';
-import 'package:wanikani_app/features/login/presentation/screens/loading_screen.dart';
+import 'package:wanikani_app/features/login/presentation/cubits/splash_cubit.dart';
 import 'package:wanikani_app/features/login/presentation/screens/login_screen.dart';
+import 'package:wanikani_app/features/login/presentation/screens/splash_screen.dart';
 import 'package:wanikani_app/routing/app_routes.dart';
 
 /// Configuração de rotas da aplicação usando go_router.
@@ -19,9 +19,9 @@ mixin AppRouter {
         path: AppRoutes.loading.path,
         name: AppRoutes.loading.name,
         builder: (BuildContext context, GoRouterState state) =>
-            BlocProvider<LoadingCubit>(
-              create: (_) => getIt<LoadingCubit>(),
-              child: const LoadingScreen(),
+            BlocProvider<SplashCubit>(
+              create: (_) => getIt<SplashCubit>(),
+              child: const SplashScreen(),
             ),
       ),
       GoRoute(

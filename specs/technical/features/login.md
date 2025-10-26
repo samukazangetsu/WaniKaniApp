@@ -44,14 +44,18 @@
 - Botão secundário: "Voltar para a tela de login"
   - Fecha o modal e retorna para LoginScreen
 
-#### 3. Tela de Loading (LoginLoadingScreen)
+#### 3. Tela de Splash (SplashScreen)
 **Componentes:**
-- Texto centralizado: "Estamos conectando você ao WaniKani"
-- Barra de progresso animada com porcentagem
-  - Progressão: 100% em 30 segundos (simulando timeout)
-  - Taxa: 100/30 = ~3.33% por segundo
-  - Ao receber sucesso da API: preenche completamente (100%)
-  - Componente reutilizável para outras features futuras
+- Título do app: "WaniKani"
+  - Tamanho grande e centralizado
+  - Fonte em destaque do design system
+- Subtítulo em japonês: "日本語を学ぼう" (Vamos aprender japonês)
+- Barra de progresso animada (indeterminada)
+  - Animação contínua durante validação do token
+- Mensagem: "Carregando..."
+- Navegação automática:
+  - Home se token for válido
+  - Login se token for inválido ou não existir
 
 #### 4. Tela de Erro (LoginErrorScreen - Full-screen)
 **Componentes:**
@@ -225,11 +229,13 @@ lib/
         └── presentation/
             ├── cubits/
             │   ├── login_cubit.dart
-            │   └── login_state.dart
+            │   ├── login_state.dart
+            │   ├── splash_cubit.dart
+            │   └── splash_state.dart
             ├── screens/
             │   ├── login_error_screen.dart
-            │   ├── login_loading_screen.dart
-            │   └── login_screen.dart
+            │   ├── login_screen.dart
+            │   └── splash_screen.dart
             └── widgets/
                 ├── token_text_field.dart
                 └── tutorial_bottom_sheet.dart
@@ -329,17 +335,15 @@ void setupLoginDependencies(GetIt getIt) {
 
 4. **Clique em "Fazer login":**
    - `LoginCubit.login(token)` é chamado
-   - Estado: `LoginLoading` → mostra `LoginLoadingScreen`
-   - Barra de progresso inicia animação (0% → 100% em 30s)
+   - Estado: `LoginLoading` → mostra overlay de carregamento
    - Cubit executa:
-     1. Salva token: `await localDataManager.saveToken(token)`
-     2. Chama `GetUserUseCase()` que:
+     1. Chama `GetUserUseCase()` que:
         - Faz request para `/user` (Dio já usa token via `AuthInterceptor`)
         - Se sucesso (200): parseia `UserModel`, retorna `Right(UserEntity)`
         - Se erro (401/404/500): retorna `Left(ApiErrorEntity)`
+     2. Se sucesso, salva token: `await localDataManager.saveToken(token)`
 
 5. **Sucesso da API:**
-   - Barra de progresso completa instantaneamente (100%)
    - Estado: `LoginSuccess(user)`
    - Navegação: `/home` (carrega injeção de dependências da home)
    - Token agora é usado automaticamente no header de todas as requisições
@@ -559,7 +563,7 @@ if (options.path.contains('/user')) {
 - [ ] Criar componente `TokenTextField` com máscara
 - [ ] Criar `LoginScreen`
 - [ ] Criar `TutorialBottomSheet`
-- [ ] Criar `LoginLoadingScreen` com barra de progresso
+- [ ] Criar `SplashScreen` com barra de progresso
 - [ ] Criar `LoginErrorScreen`
 - [ ] Configurar injeção de dependências (`login_di.dart`)
 - [ ] Atualizar rotas no `app_router.dart`
