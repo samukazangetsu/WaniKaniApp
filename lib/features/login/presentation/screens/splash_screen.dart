@@ -59,7 +59,7 @@ class _SplashScreenState extends State<SplashScreen>
       listener: (context, state) {
         // Navega para home se validação for bem-sucedida
         if (state is SplashSuccess) {
-          context.go(AppRoutes.home.path);
+          context.go(AppRoutes.login.path);
         }
 
         // Navega para login se não houver token ou for inválido

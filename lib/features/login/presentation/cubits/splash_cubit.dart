@@ -38,6 +38,8 @@ class SplashCubit extends Cubit<SplashState> {
   Future<void> checkSavedToken() async {
     emit(SplashChecking());
 
+    await Future<void>.delayed(Duration(seconds: 3));
+
     // 1. Buscar token salvo
     final token = await _localDataManager.getToken();
 

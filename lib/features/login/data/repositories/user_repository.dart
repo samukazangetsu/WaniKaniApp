@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:dio/dio.dart';
 import 'package:wanikani_app/core/error/api_error_entity.dart';
 import 'package:wanikani_app/core/error/ierror.dart';
 import 'package:wanikani_app/core/error/internal_error_entity.dart';
@@ -45,14 +46,13 @@ class UserRepository with DecodeModelMixin implements IUserRepository {
           ),
         );
       }
-
-      return Left<IError, UserEntity>(
-        ApiErrorEntity(
-          response.data?['error']?.toString() ?? CoreStrings.errorUnknown,
-          statusCode: response.statusCode,
-        ),
-      );
+      return Left<IError, UserEntity>(ApiErrorEntity.fromJson(response.data));
     } on Exception catch (e) {
+      if (e is DioException) {
+        return Left<IError, UserEntity>(
+          ApiErrorEntity.fromJson(e.response?.data),
+        );
+      }
       return Left<IError, UserEntity>(InternalErrorEntity(e.toString()));
     }
   }

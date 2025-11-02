@@ -5,6 +5,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:wanikani_app/core/theme/theme.dart';
 import 'package:wanikani_app/features/login/presentation/cubits/login_cubit.dart';
 import 'package:wanikani_app/features/login/presentation/cubits/login_state.dart';
+import 'package:wanikani_app/features/login/presentation/widgets/token_invalid_bottom_sheet.dart';
 import 'package:wanikani_app/features/login/presentation/widgets/token_text_field.dart';
 import 'package:wanikani_app/features/login/presentation/widgets/tutorial_bottom_sheet.dart';
 import 'package:wanikani_app/features/login/utils/login_strings.dart';
@@ -69,8 +70,18 @@ class _LoginScreenState extends State<LoginScreen> {
           context.go(AppRoutes.home.path);
         }
 
-        // Mostra erro em SnackBar
+        // Erro 401: token inválido -> mostrar bottom sheet específico
         if (state is LoginError) {
+          if (state.statusCode == 401) {
+            showModalBottomSheet<void>(
+              context: context,
+              isScrollControlled: true,
+              builder: (context) => const TokenInvalidBottomSheet(),
+            );
+            return;
+          }
+
+          // Outros erros: SnackBar genérico
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),

@@ -1,7 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:wanikani_app/core/dependency_injection/core_di.dart';
 import 'package:wanikani_app/core/dependency_injection/features/home_di.dart';
-import 'package:wanikani_app/features/login/login_di.dart';
+import 'package:wanikani_app/core/dependency_injection/features/login_di.dart';
 
 /// Instância global do GetIt para dependency injection.
 final GetIt getIt = GetIt.instance;

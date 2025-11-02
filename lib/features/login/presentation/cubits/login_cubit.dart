@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:wanikani_app/core/error/api_error_entity.dart';
 import 'package:wanikani_app/core/storage/local_data_manager.dart';
 import 'package:wanikani_app/features/login/domain/usecases/get_user_usecase.dart';
 import 'package:wanikani_app/features/login/presentation/cubits/login_state.dart';
@@ -83,7 +84,14 @@ class LoginCubit extends Cubit<LoginState> {
 
     // 2. Emitir estado com base no resultado
     await result.fold(
-      (error) async => emit(LoginError(message: error.message)),
+      (error) async {
+        // If API returned an HTTP status code (e.g. 401), expose it to the UI
+        int? status;
+        if (error is ApiErrorEntity) {
+          status = error.statusCode;
+        }
+        emit(LoginError(message: error.message, statusCode: status));
+      },
       (user) async {
         // 3. Salvar token apenas se validação foi bem-sucedida
         await _localDataManager.saveToken(token);

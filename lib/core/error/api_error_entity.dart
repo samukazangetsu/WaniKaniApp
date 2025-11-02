@@ -9,7 +9,7 @@ class ApiErrorEntity implements IError {
 
   factory ApiErrorEntity.fromJson(Map<String, dynamic> json) => ApiErrorEntity(
     json['message'] ?? json['error'] ?? CoreStrings.errorUnknown,
-    statusCode: json['status_code'],
+    statusCode: json['code'],
   );
 
   @override

@@ -57,8 +57,11 @@ final class LoginError extends LoginState {
   /// Mensagem de erro amigável para o usuário.
   final String message;
 
-  const LoginError({required this.message});
+  /// Código de status HTTP quando disponível (ex: 401)
+  final int? statusCode;
+
+  const LoginError({required this.message, this.statusCode});
 
   @override
-  List<Object> get props => [message];
+  List<Object?> get props => [message, statusCode];
 }

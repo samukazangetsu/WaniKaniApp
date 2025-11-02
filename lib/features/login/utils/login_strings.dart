@@ -69,4 +69,17 @@ class LoginStrings {
 
   /// Erro ao abrir URL externa.
   static const String errorOpenUrl = 'Não foi possível abrir';
+
+  // === Token inválido (401) ===
+
+  /// Título exibido quando o token fornecido é inválido.
+  static const String tokenInvalidTitle = 'Token inválido';
+
+  /// Mensagem orientando o usuário a verificar o token copiado.
+  static const String tokenInvalidMessage =
+      'O token informado parece estar incorreto. Verifique se você copiou '
+      'o token completo e tente novamente.';
+
+  /// Texto do botão para tentar novamente.
+  static const String retryButton = 'Tentar novamente';
 }
