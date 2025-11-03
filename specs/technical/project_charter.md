@@ -319,15 +319,16 @@ Features que podem ser adicionadas dependendo do progresso:
 - [x] Configuração de linting
 - [x] Estrutura de Clean Architecture
 - [x] Documentação técnica inicial
-- [ ] Setup de DI (GetIt)
-- [ ] Configuração de rotas (go_router)
+- [x] Setup de DI (GetIt)
+- [x] Configuração de rotas (go_router)
 
 ### Fase 2: Integração API (Semanas 3-4)
-- [ ] Datasource para WaniKani API (Dio + pop_network)
-- [ ] Models e Entities (Assignment, LevelProgression, ReviewStatistic)
+- [x] Datasource para WaniKani API (Dio + pop_network)
+- [x] Models e Entities (Assignment, LevelProgression, ReviewStatistic)
 - [ ] Repositories com cache
-- [ ] Use cases básicos
+- [x] Use cases básicos
 - [ ] Testes unitários (data layer)
+- [ ] Requests condicionais (data layer)
 
 ### Fase 3: Cache Offline (Semanas 5-6)
 - [ ] Setup Drift (SQLite)
@@ -337,16 +338,14 @@ Features que podem ser adicionadas dependendo do progresso:
 - [ ] Testes de persistência
 
 ### Fase 4: UI e State Management (Semanas 7-9)
-- [ ] Tema japonês customizado
-- [ ] Dashboard de reviews (UI + BLoC)
+- [x] Tema japonês customizado
+- [x] Dashboard de reviews (UI + BLoC)
 - [ ] Tela de estatísticas (UI + BLoC)
-- [ ] Tela de autenticação
-- [ ] Loading/error states
-- [ ] Widget tests
+- [x] Tela de autenticação
+- [x] Loading/error states
 
 ### Fase 5: Polimento e Testes (Semanas 10-11)
 - [ ] Refactoring e otimizações
-- [ ] Testes de integração
 - [ ] Correção de bugs
 - [ ] Performance profiling
 - [ ] Preparação para release
