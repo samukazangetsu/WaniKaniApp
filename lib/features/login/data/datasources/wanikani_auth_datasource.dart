@@ -18,8 +18,12 @@ class WaniKaniAuthDataSource {
   ///
   /// **Endpoint:** `GET /user`
   ///
+  /// **Parâmetros:**
+  /// - [apiToken]: Token de API para autenticação (obrigatório). Será usado
+  ///   no header `Authorization: Bearer {apiToken}`.
+  ///
   /// **Headers:**
-  /// - `Authorization: Bearer {token}` (injetado automaticamente)
+  /// - `Authorization: Bearer {apiToken}` (fornecido via parâmetro)
   ///
   /// **Resposta esperada (200 OK):**
   /// ```json
@@ -38,5 +42,8 @@ class WaniKaniAuthDataSource {
   /// - 401 Unauthorized: Token inválido ou revogado
   /// - 500 Internal Server Error: Problema no servidor WaniKani
   /// - DioException: Erro de rede (sem internet, timeout, etc)
-  Future<Response<dynamic>> getUser() => _dio.get('/user');
+  Future<Response<dynamic>> getUser({required String apiToken}) => _dio.get(
+    '/user',
+    options: Options(headers: {'Authorization': 'Bearer $apiToken'}),
+  );
 }

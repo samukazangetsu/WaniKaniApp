@@ -13,7 +13,9 @@ abstract class IUserRepository {
   /// Busca informações do usuário autenticado.
   ///
   /// Realiza uma chamada ao endpoint `GET /user` da API WaniKani.
-  /// O token de autenticação é injetado automaticamente pelo [AuthInterceptor].
+  ///
+  /// Parâmetros:
+  /// - [apiToken]: Token de API para autenticação (obrigatório).
   ///
   /// Retorna:
   /// - [Right(UserEntity)]: Sucesso com dados do usuário
@@ -21,11 +23,13 @@ abstract class IUserRepository {
   ///
   /// Exemplo de uso:
   /// ```dart
-  /// final result = await repository.getUser();
+  /// // Durante login (validar token inserido pelo usuário)
+  /// final result = await repository.getUser(apiToken: userInputToken);
+  ///
   /// result.fold(
   ///   (error) => print('Erro: ${error.message}'),
   ///   (user) => print('Olá, ${user.username}!'),
   /// );
   /// ```
-  Future<Either<IError, UserEntity>> getUser();
+  Future<Either<IError, UserEntity>> getUser({required String apiToken});
 }

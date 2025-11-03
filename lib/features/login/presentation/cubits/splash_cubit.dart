@@ -31,7 +31,7 @@ class SplashCubit extends Cubit<SplashState> {
   /// 1. Emite [SplashChecking]
   /// 2. Busca token salvo no storage
   /// 3. Se não existir, emite [SplashNoToken] (vai para login)
-  /// 4. Se existir, valida na API
+  /// 4. Se existir, valida na API usando o token recuperado
   /// 5. Emite [SplashSuccess] se válido OU [SplashError] se inválido
   ///
   /// Este método é chamado automaticamente ao abrir a tela de splash.
@@ -49,8 +49,8 @@ class SplashCubit extends Cubit<SplashState> {
       return;
     }
 
-    // 3. Validar token na API
-    final validationResult = await _getUserUseCase();
+    // 3. Validar token na API usando o token recuperado do storage
+    final validationResult = await _getUserUseCase(apiToken: token);
 
     // 4. Emitir estado com base no resultado
     validationResult.fold(

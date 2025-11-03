@@ -23,19 +23,26 @@ class GetUserUseCase {
 
   /// Busca dados do usuário autenticado.
   ///
+  /// Parâmetros:
+  /// - [apiToken]: Token de API para autenticação (obrigatório). Usado para
+  ///   validar o token fornecido pelo usuário antes de salvá-lo.
+  ///
   /// Delega a chamada para o repositório, que:
-  /// - Adiciona header Authorization automaticamente (via [AuthInterceptor])
+  /// - Adiciona header Authorization com o token fornecido
   /// - Faz GET /user na API WaniKani
   /// - Retorna [UserEntity] em caso de sucesso
   /// - Retorna [IError] em caso de falha (401, network error, etc)
   ///
   /// Exemplo de uso no [LoginCubit]:
   /// ```dart
-  /// final result = await _getUserUseCase();
+  /// // Durante login (validar token inserido pelo usuário)
+  /// final result = await _getUserUseCase(apiToken: userInputToken);
+  ///
   /// result.fold(
   ///   (error) => emit(LoginError(error.message)),
   ///   (user) => emit(LoginSuccess(user)),
   /// );
   /// ```
-  Future<Either<IError, UserEntity>> call() => _repository.getUser();
+  Future<Either<IError, UserEntity>> call({required String apiToken}) =>
+      _repository.getUser(apiToken: apiToken);
 }

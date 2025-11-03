@@ -29,9 +29,9 @@ class UserRepository with DecodeModelMixin implements IUserRepository {
     : _datasource = datasource;
 
   @override
-  Future<Either<IError, UserEntity>> getUser() async {
+  Future<Either<IError, UserEntity>> getUser({required String apiToken}) async {
     try {
-      final response = await _datasource.getUser();
+      final response = await _datasource.getUser(apiToken: apiToken);
 
       if (response.isSuccessful) {
         return tryDecode<Either<IError, UserEntity>>(

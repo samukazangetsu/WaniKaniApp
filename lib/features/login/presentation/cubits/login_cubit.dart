@@ -64,10 +64,13 @@ class LoginCubit extends Cubit<LoginState> {
   ///
   /// Passos:
   /// 1. Emite [LoginLoading]
-  /// 2. Valida token chamando API (GET /user)
+  /// 2. Valida token chamando API (GET /user) com o token fornecido
   /// 3. Se válido, salva token no storage seguro
   /// 4. Emite [LoginSuccess] com dados do usuário OU
   ///    [LoginError] com mensagem de erro
+  ///
+  /// **IMPORTANTE:** O token é validado ANTES de ser salvo. Assim, evitamos
+  /// salvar tokens inválidos no storage.
   ///
   /// Exemplo:
   /// ```dart
@@ -79,8 +82,8 @@ class LoginCubit extends Cubit<LoginState> {
   Future<void> login(String token) async {
     emit(LoginLoading());
 
-    // 1. Validar token chamando API
-    final result = await _getUserUseCase();
+    // 1. Validar token chamando API (passa token explicitamente)
+    final result = await _getUserUseCase(apiToken: token);
 
     // 2. Emitir estado com base no resultado
     await result.fold(
