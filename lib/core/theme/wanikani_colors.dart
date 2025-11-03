@@ -39,10 +39,10 @@ class WaniKaniColors {
   // ===== CORES DE INTERFACE (DARK THEME) =====
 
   /// Cor de fundo principal - Preto quase puro
-  static const Color background = Color(0xFF0f0f0f);
+  static const Color background = Color.fromARGB(255, 27, 27, 27);
 
   /// Cor de superfície (cards, dialogs) - Cinza escuro
-  static const Color surface = Color(0xFF232323);
+  static const Color surface = Color.fromARGB(255, 43, 43, 43);
 
   /// Cor primária do app (rosa/vermelho WaniKani)
   static const Color primary = Color(0xFFff0066);
