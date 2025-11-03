@@ -1,571 +1,599 @@
-# Desafios Arquiteturais e Roadmap de Melhorias
+# Desafios Arquiteturais e Melhorias Futuras
 
-> **Projeto:** WaniKani App  
-> **Última Atualização:** 11/10/2025  
-> **Status do Projeto:** Em desenvolvimento inicial (MVP)
-
----
-
-## 📊 Status Atual da Implementação
-
-### ✅ Concluído
-
-- [x] Estrutura base do projeto Flutter
-- [x] Configuração de linting (80+ regras)
-- [x] Clean Architecture skeleton (pastas data/domain/presentation)
-- [x] Configuração de mocks (JSON files em `assets/mock/`)
-- [x] Decisões arquiteturais documentadas (5 ADRs)
-- [x] Configuração de dependências principais (BLoC, Drift, go_router, GetIt)
-- [x] Tema japonês inicial (cores, tipografia Noto Sans JP)
-- [x] Core error handling (IError, ApiErrorEntity, InternalErrorEntity)
-- [x] DecodeModelMixin para safe parsing
-
-### 🚧 Em Desenvolvimento (Vazio/Skeleton)
-
-- [ ] **Features completas** - Todas as pastas em `lib/features/` estão vazias
-- [ ] **Database Drift** - Tabelas e DAOs não implementados
-- [ ] **API Integration** - Datasources, repositories e use cases não implementados
-- [ ] **UI Screens** - Nenhuma tela implementada além de skeleton
-- [ ] **Navigation** - go_router configurado mas sem rotas reais
-- [ ] **Dependency Injection** - GetIt configurado mas sem registros
-- [ ] **Tests** - Estrutura existe mas sem testes implementados
-
-### ❌ Não Iniciado
-
-- [ ] Autenticação com WaniKani API (token management)
-- [ ] Dashboard com estatísticas SRS
-- [ ] Visualização de assignments
-- [ ] Sincronização offline
-- [ ] Cache management com TTL
-- [ ] Rate limiting
-- [ ] Error handling UI
-- [ ] Loading states
-- [ ] Dark mode
-- [ ] Notificações
+> **Última Atualização:** 02/11/2025  
+> **Versão:** 1.0.0
 
 ---
 
-## 🎯 Desafios Arquiteturais Atuais
+## 🎯 Visão Geral
 
-### 1. Sincronização Offline Complexa
+Este documento lista desafios técnicos identificados, débitos técnicos conhecidos e melhorias planejadas para o WaniKani App. Use como referência para priorização de refactorings e evoluções arquiteturais.
 
-**Desafio:**
+---
 
-O sistema de cache com TTL precisa lidar com múltiplos cenários:
+## 🔥 Prioridade ALTA - Corretude e Segurança
 
-- Cache miss (primeira vez)
-- Cache hit válido (< 24h)
-- Cache expirado (> 24h)
-- Conflitos entre cache local e API (user fez review no web)
-- Network offline (usar cache expirado ou erro?)
+### 1. Padronizar Error Handling em Todos os Repositories
 
-**Possíveis Soluções:**
+**Problema Atual:**
+- `UserRepository` segue padrão correto de tratamento de `DioException`
+- `HomeRepository` e futuros repositories não seguem o mesmo padrão
+- Inconsistência causa bugs difíceis de rastrear
+
+**Impacto:**
+- 🔴 Erros de API não são tratados corretamente
+- 🔴 UI recebe erro genérico ao invés de mensagem específica
+- 🔴 Possíveis crashes em produção
+
+**Solução:**
+Refatorar todos os repositories para seguir o padrão estabelecido em `UserRepository.getUser()`:
 
 ```dart
-// Opção A: Cache-first com fallback
-Future<Either<IError, List<AssignmentEntity>>> getAssignments() async {
+// Padrão OBRIGATÓRIO para todos os repositories
+@override
+Future<Either<IError, T>> metodoDoRepository() async {
   try {
-    // 1. Tentar API primeiro
-    final apiResult = await _datasource.getAssignments();
-    if (apiResult.isSuccessful) {
-      await _dao.upsertAll(apiResult.data);
-      return Right(apiResult.data);
+    final response = await _datasource.metodo();
+    
+    if (response.isSuccessful) {
+      return tryDecode<Either<IError, T>>(
+        () {
+          // Parsing logic
+          final entity = Model.fromJson(response.data);
+          return Right(entity);
+        },
+        orElse: (_) => Left(InternalErrorEntity(CoreStrings.errorUnknown)),
+      );
     }
-  } catch (e) {
-    // Network error - usar cache mesmo expirado
+    
+    // ✅ CRÍTICO: Retornar ApiErrorEntity quando !isSuccessful
+    return Left(ApiErrorEntity.fromJson(response.data));
+  } on Exception catch (e) {
+    // ✅ CRÍTICO: Tratar DioException especificamente
+    if (e is DioException) {
+      return Left(ApiErrorEntity.fromJson(e.response?.data));
+    }
+    return Left(InternalErrorEntity(e.toString()));
   }
-  
-  // 2. Fallback para cache
-  final cached = await _dao.getAll();
-  if (cached.isNotEmpty) {
-    return Right(cached);
-  }
-  
-  return Left(NetworkErrorEntity());
-}
-
-// Opção B: Cache-first agressivo
-Future<Either<IError, List<AssignmentEntity>>> getAssignments() async {
-  // 1. Retornar cache imediatamente se válido
-  final cached = await _dao.getAll();
-  if (cached.isNotEmpty && !_isExpired(cached.first)) {
-    // Background refresh (não espera)
-    _refreshInBackground();
-    return Right(cached);
-  }
-  
-  // 2. Fetch da API
-  return _fetchFromApi();
 }
 ```
 
-**Decisão Pendente:**
+**Arquivos Afetados:**
+- ✅ `lib/features/login/data/repositories/user_repository.dart` - **OK**
+- ❌ `lib/features/home/data/repositories/home_repository.dart` - **PRECISA REFACTORING**
+  - `getCurrentLevelProgression()`
+  - `getAssignments()`
+  - `getReviewStats()`
+  - `getLessonStats()`
 
-- Como notificar UI de updates em background?
-- Usar Stream no repository para emitir múltiplas respostas?
-- Implementar "pull-to-refresh"?
+**Estimativa:** 2-3 horas  
+**Prioridade:** 🔴 CRÍTICA  
+**Status:** Pendente
 
 ---
 
-### 2. State Management Complexity
+### 2. Implementar Tratamento Global de Erro 401 (Unauthorized)
 
-**Desafio:**
+**Problema Atual:**
+- Erro 401 apenas tratado no `LoginCubit`
+- Se token expira enquanto usuário navega, app não redireciona para login
+- Telas exibem erro genérico
 
-Algumas features precisam coordenar múltiplos Cubits:
+**Impacto:**
+- 🔴 UX ruim quando token expira
+- 🔴 Usuário não sabe que precisa fazer login novamente
+- 🟡 Possível loop de requisições falhadas
+
+**Solução Opção 1: Interceptor Global**
+```dart
+// lib/core/network/interceptors/auth_interceptor.dart
+
+class AuthInterceptor extends Interceptor {
+  final FlutterSecureStorage _storage;
+  final GoRouter _router;
+  
+  AuthInterceptor({
+    required FlutterSecureStorage storage,
+    required GoRouter router,
+  }) : _storage = storage, _router = router;
+  
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) async {
+    if (err.response?.statusCode == 401) {
+      // 1. Limpar token
+      await _storage.delete(key: 'api_key');
+      
+      // 2. Limpar dados do usuário (quando implementado)
+      // await _localDataManager.clearUser();
+      
+      // 3. Redirecionar para login
+      _router.go('/login');
+      
+      // 4. Mostrar notificação (toast ou snackbar)
+      // _notificationService.show('Sessão expirada. Faça login novamente.');
+    }
+    
+    handler.next(err);
+  }
+}
+```
+
+**Solução Opção 2: Stream Global de Autenticação**
+```dart
+// lib/core/auth/auth_service.dart
+
+class AuthService {
+  final _authStateController = StreamController<AuthState>.broadcast();
+  
+  Stream<AuthState> get authState => _authStateController.stream;
+  
+  void signOut() {
+    _authStateController.add(AuthState.unauthenticated);
+    // Limpar storage
+    // Redirecionar
+  }
+}
+
+// Em cada repository
+if (e is DioException && e.response?.statusCode == 401) {
+  GetIt.I<AuthService>().signOut();
+  return Left(AuthErrorEntity('Sessão expirada'));
+}
+```
+
+**Estimativa:** 4-6 horas  
+**Prioridade:** 🔴 ALTA  
+**Status:** Pendente
+
+---
+
+### 3. Fix: Cubit Emit Após Close (Hot Reload)
+
+**Problema Atual:**
+- SplashCubit tenta emitir estado após hot reload
+- Causa erro `Cannot emit new states after calling close`
+
+**Impacto:**
+- 🟡 Erro em desenvolvimento (logs poluídos)
+- 🟢 Não afeta produção
+
+**Solução:**
+Adicionar guards `isClosed` antes de todos os `emit()` em operações assíncronas:
 
 ```dart
-// Dashboard precisa de dados de 3 endpoints diferentes
-class DashboardScreen extends StatelessWidget {
+// Em splash_cubit.dart e outros cubits com operações assíncronas
+Future<void> checkSavedToken() async {
+  try {
+    final token = await _storage.read(key: 'api_key');
+    
+    if (isClosed) return;  // ✅ Guard
+    
+    if (token != null) {
+      emit(SplashAuthenticated());
+    } else {
+      emit(SplashUnauthenticated());
+    }
+  } catch (e) {
+    if (isClosed) return;  // ✅ Guard no catch também
+    emit(SplashError(message: e.toString()));
+  }
+}
+```
+
+**Estimativa:** 1 hora  
+**Prioridade:** 🟡 MÉDIA  
+**Status:** Pendente
+
+---
+
+## 🚀 Prioridade MÉDIA - Features e Performance
+
+### 4. Implementar Cache Offline com Drift
+
+**Problema Atual:**
+- App não funciona offline (apenas mocks em desenvolvimento)
+- Toda requisição vai para API mesmo se dados não mudaram
+
+**Impacto:**
+- 🔴 Objetivo offline-first não cumprido
+- 🟡 Consumo desnecessário de API rate limit
+- 🟡 UX ruim em conexões lentas
+
+**Solução:**
+Implementar camada de cache com Drift (SQLite):
+
+**1. Setup Drift Database:**
+```dart
+// lib/core/database/app_database.dart
+
+@DriftDatabase(tables: [
+  Assignments,
+  LevelProgressions,
+  ReviewStatistics,
+  Users,
+])
+class AppDatabase extends _$AppDatabase {
+  AppDatabase() : super(_openConnection());
+  
   @override
-  Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (_) => AssignmentsCubit()),
-        BlocProvider(create: (_) => LevelProgressionCubit()),
-        BlocProvider(create: (_) => ReviewStatisticsCubit()),
-      ],
-      child: BlocBuilder<...>(/* Como combinar 3 estados? */),
+  int get schemaVersion => 1;
+  
+  static QueryExecutor _openConnection() {
+    return driftDatabase(
+      name: 'wanikani_app_db',
+      logStatements: true,
     );
   }
 }
 ```
 
-**Possíveis Soluções:**
-
+**2. Criar DAOs:**
 ```dart
-// Opção A: Cubit agregador (recomendado)
-class DashboardCubit extends Cubit<DashboardState> {
-  final GetAssignmentsUseCase _getAssignments;
-  final GetLevelProgressionUseCase _getLevelProgression;
-  final GetReviewStatisticsUseCase _getReviewStatistics;
+// lib/core/database/daos/assignment_dao.dart
 
-  Future<void> loadDashboard() async {
-    emit(DashboardLoading());
-    
-    // Fetch paralelo
-    final results = await Future.wait([
-      _getAssignments(),
-      _getLevelProgression(),
-      _getReviewStatistics(),
-    ]);
-    
-    // Combinar resultados
-    final assignments = results[0].fold((e) => null, (data) => data);
-    final progression = results[1].fold((e) => null, (data) => data);
-    final statistics = results[2].fold((e) => null, (data) => data);
-    
-    if (assignments != null && progression != null && statistics != null) {
-      emit(DashboardLoaded(
-        assignments: assignments,
-        progression: progression,
-        statistics: statistics,
-      ));
-    } else {
-      emit(DashboardError(/* ... */));
-    }
-  }
-}
-
-// Opção B: Combinar streams (mais complexo)
-Stream<DashboardState> _mapLoadToState() async* {
-  yield DashboardLoading();
+@DriftAccessor(tables: [Assignments])
+class AssignmentDao extends DatabaseAccessor<AppDatabase> 
+    with _$AssignmentDaoMixin {
   
-  await for (final combined in Rx.combineLatest3(
-    _assignmentRepository.watchAll(),
-    _progressionRepository.watchCurrent(),
-    _statisticsRepository.watchAll(),
-    (a, p, s) => DashboardData(a, p, s),
-  )) {
-    yield DashboardLoaded(data: combined);
+  AssignmentDao(AppDatabase db) : super(db);
+  
+  Future<List<AssignmentEntity>> getAll() async {
+    final query = select(assignments);
+    final results = await query.get();
+    return results.map((row) => row.toEntity()).toList();
+  }
+  
+  Future<void> upsertAll(List<AssignmentEntity> entities) async {
+    await batch((batch) {
+      batch.insertAllOnConflictUpdate(
+        assignments,
+        entities.map((e) => e.toCompanion()).toList(),
+      );
+    });
+  }
+  
+  Future<void> deleteExpired(Duration ttl) async {
+    final cutoff = DateTime.now().subtract(ttl);
+    await (delete(assignments)
+      ..where((tbl) => tbl.cachedAt.isSmallerThanValue(cutoff))
+    ).go();
   }
 }
 ```
 
-**Decisão Pendente:**
-
-- Cubit agregador para cada feature complexa?
-- Usar streams (rxdart) ou Futures simples?
-
----
-
-### 3. Cache Invalidation Strategy
-
-**Desafio:**
-
-Quando invalidar cache:
-
-- Após user fazer review no app (update local)
-- Após X tentativas de refresh
-- Manualmente (pull-to-refresh)
-- Periodicamente em background (WorkManager)
-
-**Possíveis Soluções:**
-
+**3. Atualizar Repositories com Cache:**
 ```dart
-// TTL strategy atual (básico)
-class CachePolicy {
-  static const assignments = Duration(hours: 24);
-  static const levelProgression = Duration(hours: 24);
-  static const reviewStatistics = Duration(hours: 1);
-}
-
-// Strategy avançado (futuro)
-class SmartCacheStrategy {
-  Duration getTTL(String endpoint, {DateTime? lastModified}) {
-    // Se usuário acabou de fazer review, TTL curto
-    if (endpoint == 'review_statistics' && _hasRecentActivity()) {
-      return Duration(minutes: 5);
-    }
+// Padrão offline-first
+@override
+Future<Either<IError, List<AssignmentEntity>>> getAssignments({
+  bool forceRefresh = false,
+}) async {
+  try {
+    // 1. Limpar cache expirado
+    await _assignmentDao.deleteExpired(Duration(hours: 24));
     
-    // Se dados não mudaram em 7 dias, TTL longo
-    if (lastModified != null) {
-      final age = DateTime.now().difference(lastModified);
-      if (age.inDays > 7) {
-        return Duration(days: 7); // Extender TTL
+    // 2. Checar cache se não for force refresh
+    if (!forceRefresh) {
+      final cached = await _assignmentDao.getAll();
+      if (cached.isNotEmpty) {
+        return Right(cached);
       }
     }
     
-    return CachePolicy.fromEndpoint(endpoint);
+    // 3. Buscar da API
+    final response = await _datasource.getAssignments();
+    if (response.isSuccessful) {
+      final entities = (response.data['data'] as List)
+        .map((json) => AssignmentModel.fromJson(json))
+        .toList();
+      
+      // 4. Cachear dados
+      await _assignmentDao.upsertAll(entities);
+      
+      return Right(entities);
+    }
+    
+    return Left(ApiErrorEntity.fromJson(response.data));
+  } on Exception catch (e) {
+    // 5. Fallback para cache expirado em caso de erro de rede
+    if (e is DioException) {
+      final cached = await _assignmentDao.getAll();
+      if (cached.isNotEmpty) {
+        // Retornar cache mesmo expirado (melhor que nada)
+        return Right(cached);
+      }
+      return Left(ApiErrorEntity.fromJson(e.response?.data));
+    }
+    return Left(InternalErrorEntity(e.toString()));
   }
 }
 ```
 
-**Decisão Pendente:**
+**TTLs por Endpoint:**
+- Assignments: 24 horas
+- Level Progressions: 24 horas
+- Review Statistics: 1 hora
+- User: 7 dias
 
-- Implementar smart caching ou manter TTL fixo?
-- Adicionar "força refresh" em todas as telas?
+**Estimativa:** 20-30 horas  
+**Prioridade:** 🟠 ALTA  
+**Status:** Não iniciado
 
 ---
 
-### 4. Error Handling UX
+### 5. Persistir Dados do User Após Login
 
-**Desafio:**
+**Problema Atual:**
+- Login valida token via GET /user
+- Response não é salva localmente
+- Home e outras features podem precisar fazer nova requisição GET /user
 
-Como apresentar erros ao usuário de forma útil:
+**Impacto:**
+- 🟡 Chamadas duplicadas à API
+- 🟡 Consumo desnecessário de rate limit
+- 🟡 Dados do usuário não disponíveis offline
 
-- Network timeout vs. 500 server error (diferentes UX)
-- Retry vs. fallback para cache
-- Toast vs. Dialog vs. Error Screen
-- Logging de erros para analytics
-
-**Possíveis Soluções:**
-
-```dart
-// Hierarquia de Error Entities
-sealed class IError {
-  String get message;
-  ErrorSeverity get severity; // info, warning, error, critical
-  ErrorRecovery get recovery; // retry, cache, ignore, fail
-}
-
-class NetworkErrorEntity extends IError {
-  final DioException exception;
-  
-  @override
-  ErrorRecovery get recovery {
-    if (exception.type == DioExceptionType.connectionTimeout) {
-      return ErrorRecovery.retry; // Mostrar botão retry
-    }
-    return ErrorRecovery.cache; // Usar cache
-  }
-}
-
-class ApiErrorEntity extends IError {
-  final int statusCode;
-  
-  @override
-  ErrorRecovery get recovery {
-    if (statusCode == 429) {
-      return ErrorRecovery.retry; // Rate limit - aguardar
-    }
-    if (statusCode >= 500) {
-      return ErrorRecovery.cache; // Server error - cache
-    }
-    return ErrorRecovery.fail; // Client error - mostrar erro
-  }
-}
-
-// UI Error Handler
-class ErrorHandler {
-  static void handle(BuildContext context, IError error) {
-    switch (error.recovery) {
-      case ErrorRecovery.retry:
-        _showRetrySnackbar(context, error);
-      case ErrorRecovery.cache:
-        _showCacheWarning(context);
-      case ErrorRecovery.fail:
-        _showErrorDialog(context, error);
-      case ErrorRecovery.ignore:
-        break;
-    }
-  }
-}
-```
-
-**Decisão Pendente:**
-
-- Criar ErrorHandler centralizado?
-- Adicionar analytics/logging (Sentry, Firebase)?
-
----
-
-### 5. Code Generation Build Time
-
-**Desafio:**
-
-Build runner é lento (especialmente Drift):
-
-```bash
-$ flutter pub run build_runner build
-[INFO] Running build...
-[INFO] 45.2s elapsed, 15/28 actions completed.
-[INFO] 67.8s elapsed, 28/28 actions completed.
-[INFO] Succeeded after 68.1s
-```
-
-**Possíveis Soluções:**
-
-- Usar `--delete-conflicting-outputs` sempre
-- Evitar regenerar tudo: `build_runner watch` em dev
-- Excluir arquivos `.g.dart` do Git (já feito)
-- Considerar alternatives ao Drift? (ObjectBox, Isar)
-
-**Decisão Pendente:**
-
-- Manter Drift (type-safe) ou migrar para Isar (mais rápido)?
-
----
-
-### 6. Dependency Injection Scalability
-
-**Desafio:**
-
-GetIt com registros manuais cresce rápido:
+**Solução:**
+Salvar resposta do GET /user localmente após login bem-sucedido:
 
 ```dart
-void setupDependencies() {
-  // Datasources
-  getIt.registerLazySingleton(() => AssignmentDataSource(getIt()));
-  getIt.registerLazySingleton(() => LevelProgressionDataSource(getIt()));
-  getIt.registerLazySingleton(() => ReviewStatisticsDataSource(getIt()));
+// 1. Criar LocalDataManager (ou usar Drift DAO)
+class LocalDataManager {
+  final FlutterSecureStorage _storage;
   
-  // Repositories
-  getIt.registerLazySingleton<IAssignmentRepository>(
-    () => AssignmentRepository(datasource: getIt()),
-  );
-  // ... 20+ linhas por feature
+  static const String _userKey = 'cached_user';
   
-  // UseCases
-  getIt.registerLazySingleton(() => GetAssignmentsUseCase(repository: getIt()));
-  // ...
-  
-  // Cubits
-  getIt.registerFactory(() => AssignmentsCubit(useCase: getIt()));
-  // ...
-}
-```
-
-**Possíveis Soluções:**
-
-```dart
-// Opção A: Auto registration com get_it_mixins
-@Injectable()
-class AssignmentDataSource { /* ... */ }
-
-void main() {
-  configureDependencies(); // Auto-generated
-  runApp(MyApp());
-}
-
-// Opção B: Feature modules
-class AssignmentModule {
-  static void register(GetIt getIt) {
-    getIt.registerLazySingleton(() => AssignmentDataSource(getIt()));
-    getIt.registerLazySingleton<IAssignmentRepository>(
-      () => AssignmentRepository(datasource: getIt()),
+  Future<void> saveUser(UserEntity user) async {
+    final json = UserModel(user).toJson();
+    await _storage.write(
+      key: _userKey,
+      value: jsonEncode(json),
     );
-    getIt.registerLazySingleton(() => GetAssignmentsUseCase(repository: getIt()));
-    getIt.registerFactory(() => AssignmentsCubit(useCase: getIt()));
+  }
+  
+  Future<UserEntity?> getUser() async {
+    final jsonString = await _storage.read(key: _userKey);
+    if (jsonString == null) return null;
+    
+    final json = jsonDecode(jsonString);
+    return UserModel.fromJson(json);
+  }
+  
+  Future<void> clearUser() async {
+    await _storage.delete(key: _userKey);
   }
 }
 
-void setupDependencies() {
-  AssignmentModule.register(getIt);
-  LevelProgressionModule.register(getIt);
-  ReviewStatisticsModule.register(getIt);
+// 2. Atualizar LoginCubit
+Future<void> login(String apiKey) async {
+  emit(LoginLoading());
+  
+  // Salvar API key
+  await _storage.write(key: 'api_key', value: apiKey);
+  
+  // Validar com GET /user
+  final result = await _getUserUseCase(apiKey);
+  
+  result.fold(
+    (error) {
+      emit(LoginError(message: error.message));
+    },
+    (user) async {
+      // ✅ Salvar user localmente
+      await _localDataManager.saveUser(user);
+      
+      emit(LoginSuccess(user: user));
+    },
+  );
+}
+
+// 3. Outras features consomem cache
+class HomeCubit extends Cubit<HomeState> {
+  Future<void> loadDashboard() async {
+    // Buscar user do cache local (não da API)
+    final user = await _localDataManager.getUser();
+    
+    if (user != null) {
+      // Usar dados do user
+      emit(HomeLoaded(username: user.username, level: user.level));
+    }
+  }
 }
 ```
 
-**Decisão Pendente:**
-
-- Adicionar `injectable` package + code gen?
-- Manter manual com feature modules?
-
----
-
-## 🚀 Roadmap de Melhorias
-
-### Fase 1: MVP Funcional (4-6 semanas)
-
-**Objetivo:** App funcional com features básicas
-
-- [ ] Implementar autenticação (token storage)
-- [ ] Dashboard com estatísticas básicas
-- [ ] Lista de assignments por SRS stage
-- [ ] Sincronização offline básica (cache + API)
-- [ ] Error handling UX
-- [ ] Tests unitários (>80% coverage)
-
-### Fase 2: Polimento UX (2-3 semanas)
-
-**Objetivo:** Melhorar experiência do usuário
-
-- [ ] Dark mode
-- [ ] Pull-to-refresh em todas as telas
-- [ ] Skeleton loaders
-- [ ] Animações de transição
-- [ ] Empty states personalizados
-- [ ] Feedback visual (haptics, toasts)
-
-### Fase 3: Features Avançadas (3-4 semanas)
-
-**Objetivo:** Recursos que diferenciam o app
-
-- [ ] Widgets home screen (iOS 16+, Android 12+)
-- [ ] Notificações de reviews disponíveis
-- [ ] Gráficos de progresso (fl_chart)
-- [ ] Export de estatísticas (CSV, PDF)
-- [ ] Temas customizáveis (além de dark/light)
-- [ ] Integração com Apple Watch / Wear OS
-
-### Fase 4: Otimização (2-3 semanas)
-
-**Objetivo:** Performance e qualidade
-
-- [ ] Performance profiling (DevTools)
-- [ ] Reduzir tamanho do APK/IPA
-- [ ] CI/CD (GitHub Actions)
-- [ ] Crashlytics / Analytics
-- [ ] A/B testing de features
-- [ ] Localization (i18n) - Japonês, Inglês
-
-### Fase 5: Release (1-2 semanas)
-
-**Objetivo:** Publicar nas stores
-
-- [ ] App Store listing (screenshots, descrição)
-- [ ] Play Store listing
-- [ ] Beta testing (TestFlight, Internal Testing)
-- [ ] Review de privacidade (GDPR, CCPA)
-- [ ] Documentação de usuário
-- [ ] Marketing/website
+**Estimativa:** 3-4 horas  
+**Prioridade:** 🟠 MÉDIA  
+**Status:** Pendente
 
 ---
 
-## 🔮 Visão de Longo Prazo (v2.0+)
+### 6. Implementar Rate Limiting e Retry com Backoff
 
-### Features Exploratórias
+**Problema Atual:**
+- App não trata erro 429 (Too Many Requests)
+- Não há retry automático em falhas temporárias
 
-- **Modo Offline Completo**: Sincronização bidirecional (fazer reviews offline)
-- **Gamificação**: Badges, streaks, achievements
-- **Social**: Comparar progresso com amigos
-- **AI Assistant**: Sugestões de estudo personalizadas
-- **Desktop App**: Flutter Windows/macOS/Linux
-- **Web App**: Flutter Web (PWA)
-- **Widgets Avançados**: Mini-games, flashcards rápidos
-- **Voice Input**: Praticar pronúncia (speech-to-text)
-- **AR Kanji**: Reconhecer kanji com câmera
+**Impacto:**
+- 🟡 UX ruim quando rate limit é atingido
+- 🟡 Usuário precisa fazer refresh manual
 
-### Decisões Arquiteturais Futuras
+**Solução:**
+Interceptor de retry com exponential backoff:
 
-- Migrar para Riverpod? (state management mais moderno)
-- Adicionar BFF (Backend-for-Frontend) próprio?
-- Implementar GraphQL em vez de REST?
-- Usar Firebase para features sociais?
-- Multi-plataforma real (shared codebase com web/desktop)?
+```dart
+class RetryInterceptor extends Interceptor {
+  final int maxRetries;
+  final Duration initialDelay;
+  
+  RetryInterceptor({
+    this.maxRetries = 3,
+    this.initialDelay = const Duration(seconds: 1),
+  });
+  
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) async {
+    if (_shouldRetry(err)) {
+      final retryCount = err.requestOptions.extra['retryCount'] ?? 0;
+      
+      if (retryCount < maxRetries) {
+        final waitTime = _calculateWaitTime(err, retryCount);
+        await Future.delayed(waitTime);
+        
+        try {
+          final response = await _retry(err.requestOptions, retryCount + 1);
+          handler.resolve(response);
+          return;
+        } catch (e) {
+          // Se retry falhar, continuar normalmente
+        }
+      }
+    }
+    
+    handler.next(err);
+  }
+  
+  bool _shouldRetry(DioException err) {
+    return err.response?.statusCode == 429 ||  // Rate limit
+           err.response?.statusCode == 503 ||  // Service unavailable
+           err.type == DioExceptionType.connectionTimeout;
+  }
+  
+  Duration _calculateWaitTime(DioException err, int retryCount) {
+    // Verificar header Retry-After
+    if (err.response?.statusCode == 429) {
+      final retryAfter = err.response?.headers['Retry-After']?.first;
+      if (retryAfter != null) {
+        final seconds = int.tryParse(retryAfter);
+        if (seconds != null) {
+          return Duration(seconds: seconds);
+        }
+      }
+    }
+    
+    // Exponential backoff: 1s, 2s, 4s, 8s...
+    return initialDelay * (1 << retryCount);
+  }
+}
+```
 
----
-
-## 📝 Technical Debt Atual
-
-### Alta Prioridade
-
-1. **Features vazias** - Implementar esqueletos de data/domain/presentation
-2. **Testes inexistentes** - Adicionar tests para camadas existentes (error, mixins)
-3. **API não integrada** - Ainda 100% mock, precisa integrar API real
-4. **DI não configurado** - GetIt não tem registros reais
-
-### Média Prioridade
-
-1. **Documentação de código** - Adicionar dartdoc comments
-2. **CI/CD ausente** - Configurar GitHub Actions
-3. **Logging básico** - Apenas debugPrint, precisa de logger estruturado
-4. **Error handling incompleto** - Faltam recovery strategies
-
-### Baixa Prioridade
-
-1. **Código morto** - Remover imports não usados
-2. **Magic numbers** - Extrair para constantes (TTL durations)
-3. **Build warnings** - Resolver deprecations de packages
-
----
-
-## 🎓 Lições Aprendidas (Para Futuros Projetos)
-
-### O Que Funcionou Bem
-
-- ✅ **Clean Architecture** - Separação clara facilita testes e manutenção
-- ✅ **Documentação primeiro** - ADRs ajudam a tomar decisões conscientes
-- ✅ **Linting rigoroso** - 80+ regras forçam código consistente
-- ✅ **Tema japonês** - Diferencial visual alinhado com propósito do app
-- ✅ **Mocks desde o início** - Permitiu desenvolvimento sem dependência de API
-
-### O Que Pode Melhorar
-
-- ⚠️ **Planejar DI antes** - GetIt manual é verboso, considerar injectable desde início
-- ⚠️ **Drift overhead** - Build time alto, avaliar alternatives antes de commitar
-- ⚠️ **Testing strategy** - Definir meta de coverage ANTES de codificar
-- ⚠️ **Feature flags** - Adicionar desde MVP para controlar rollout
-
-### O Que Evitar
-
-- ❌ **God classes** - Manter Cubits focados em uma responsabilidade
-- ❌ **Over-engineering** - Não criar abstrações até precisar (YAGNI)
-- ❌ **Ignorar performance** - Profiling desde o início, não deixar para depois
-
----
-
-## 📊 Métricas de Sucesso
-
-### Qualidade de Código
-
-| Métrica | Meta Atual | v1.0 | v2.0 |
-|---------|------------|------|------|
-| Test Coverage | >80% | >90% | >95% |
-| Linting Errors | 0 | 0 | 0 |
-| Code Smells (SonarQube) | - | <20 | <10 |
-| Cyclomatic Complexity | - | <10 | <8 |
-
-### Performance
-
-| Métrica | Meta Atual | v1.0 | v2.0 |
-|---------|------------|------|------|
-| App Startup Time | - | <2s | <1.5s |
-| Time to Interactive | - | <3s | <2s |
-| Frame Drops (99th %ile) | - | <1% | <0.5% |
-| Memory Usage (avg) | - | <100MB | <80MB |
-| APK Size | - | <20MB | <15MB |
-
-### Negócio
-
-| Métrica | Meta Atual | v1.0 | v2.0 |
-|---------|------------|------|------|
-| App Store Rating | - | >4.5★ | >4.7★ |
-| Daily Active Users | - | 100+ | 1000+ |
-| Retention (Day 7) | - | >40% | >60% |
-| Crash-free Rate | - | >99.5% | >99.9% |
+**Estimativa:** 4-5 horas  
+**Prioridade:** 🟡 MÉDIA  
+**Status:** Pendente
 
 ---
 
-**Última Revisão:** 11/10/2025  
-**Próxima Revisão:** Após cada fase do roadmap
+## 🎨 Prioridade BAIXA - UX e Qualidade de Vida
+
+### 7. Implementar Internacionalização (i18n)
+
+**Problema Atual:**
+- Strings hardcoded em PT-BR
+- Não suporta EN (planejado)
+
+**Solução:**
+Usar package de i18n (a definir):
+- `flutter_localizations`
+- `easy_localization`
+- `intl`
+
+**Estimativa:** 8-10 horas  
+**Prioridade:** 🟢 BAIXA  
+**Status:** Futuro (pós-v1.0)
+
+---
+
+### 8. Implementar CI/CD com GitHub Actions
+
+**Problema Atual:**
+- Sem automação de testes
+- Sem verificação automática de quality gates
+
+**Solução:**
+Criar workflow `.github/workflows/pr.yml`:
+
+```yaml
+name: PR Checks
+
+on: [pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2
+      - run: flutter pub get
+      - run: flutter format --dry-run --set-exit-if-changed .
+      - run: flutter analyze
+      - run: flutter test --coverage
+      - uses: codecov/codecov-action@v3
+```
+
+**Estimativa:** 3-4 horas  
+**Prioridade:** 🟡 MÉDIA  
+**Status:** Planejado para futuro próximo
+
+---
+
+### 9. Adicionar GitHub Copilot Pro Review em PRs
+
+**Problema Atual:**
+- Code review apenas manual
+
+**Solução:**
+Habilitar GitHub Copilot Pro review automático em PRs
+
+**Estimativa:** 1 hora (configuração)  
+**Prioridade:** 🟢 BAIXA  
+**Status:** Planejado
+
+---
+
+## 📊 Métricas e Monitoramento (Futuro)
+
+### 10. Implementar Analytics e Crash Reporting
+
+**Problema Atual:**
+- Sem visibilidade de crashes em produção
+- Sem métricas de uso
+
+**Solução (Opções):**
+- Firebase Crashlytics
+- Sentry
+- Firebase Analytics (opcional)
+
+**Estimativa:** 6-8 horas  
+**Prioridade:** 🟢 BAIXA (pós-loja)  
+**Status:** Futuro
+
+---
+
+## 📋 Resumo de Prioridades
+
+### Sprint Atual (Próximas 2 semanas)
+1. 🔴 Padronizar error handling em HomeRepository
+2. 🔴 Implementar tratamento global de 401
+3. 🟡 Fix cubit emit após close
+
+### Próximo Sprint (2-4 semanas)
+4. 🟠 Implementar cache offline com Drift
+5. 🟠 Persistir dados do user após login
+
+### Backlog (1-3 meses)
+6. 🟡 Rate limiting e retry
+7. 🟡 CI/CD com GitHub Actions
+8. 🟢 i18n PT-BR + EN
+9. 🟢 Copilot Pro review
+10. 🟢 Analytics e crash reporting
+
+---
+
+## 🔗 Referências
+
+- [ADR-003: Offline-First com Drift](adr/003-offline-first-drift.md)
+- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Problemas conhecidos
+- [GitHub Issues](https://github.com/samukazangetsu/WaniKaniApp/issues) - Track de tasks
+
+---
+
+> **Nota:** Este documento é vivo. Adicione novos desafios conforme identificados, marque como resolvidos quando concluídos. 🚀

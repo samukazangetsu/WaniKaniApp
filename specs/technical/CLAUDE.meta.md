@@ -256,6 +256,76 @@ class AssignmentRepository implements IAssignmentRepository {
 - ✅ Dependency injection via constructor
 - ❌ NO direct API calls in repository (use datasource)
 
+### 🚨 CRITICAL: DioException Error Handling Pattern
+
+**MANDATORY PATTERN - All repository methods MUST follow this:**
+
+```dart
+@override
+Future<Either<IError, UserEntity>> getUser() async {
+  try {
+    final Response<dynamic> response = await _datasource.getUser();
+
+    if (response.isSuccessful) {
+      return tryDecode<Either<IError, UserEntity>>(
+        () => Right(UserModel.fromJson(response.data['data']).entity),
+        orElse: (_) => Left(
+          InternalErrorEntity(CoreStrings.errorUnknown),
+        ),
+      );
+    }
+
+    // ⚠️ CRITICAL: When !isSuccessful, parse error from response.data
+    return Left(ApiErrorEntity.fromJson(response.data));
+  } on Exception catch (e) {
+    // ⚠️ CRITICAL: Check for DioException specifically
+    if (e is DioException) {
+      return Left(
+        ApiErrorEntity.fromJson(e.response?.data ?? <String, dynamic>{}),
+      );
+    }
+
+    return Left(InternalErrorEntity(e.toString()));
+  }
+}
+```
+
+**Why This Pattern is Critical:**
+
+1. **Dio throws exceptions on 4xx/5xx status codes** - You MUST catch DioException
+2. **Error response is in `e.response?.data`** - Not in the main response object
+3. **ApiErrorEntity.fromJson** expects WaniKani error format: `{"error": "message", "code": 401}`
+4. **Without this pattern:** App crashes or shows generic "Unknown error" instead of actual API error message
+
+**Reference Implementation:**
+- ✅ `lib/features/login/data/repositories/user_repository.dart` - CORRECT implementation (getUser method)
+- ❌ `lib/features/home/data/repositories/home_repository.dart` - NEEDS REFACTORING (4 methods missing DioException check)
+
+**Common Mistake to Avoid:**
+```dart
+// ❌ WRONG - This will crash on 4xx/5xx errors
+try {
+  final response = await _datasource.getUser();
+  if (response.isSuccessful) {
+    return Right(UserModel.fromJson(response.data['data']).entity);
+  }
+  return Left(ApiErrorEntity.fromJson(response.data));
+} catch (e) {
+  // Missing DioException check - will return generic error
+  return Left(InternalErrorEntity(e.toString()));
+}
+```
+
+**Checklist for Every Repository Method:**
+- [ ] Wrapped in try-catch block
+- [ ] Checks `response.isSuccessful` before parsing success data
+- [ ] Returns `Left(ApiErrorEntity.fromJson(response.data))` when !isSuccessful
+- [ ] Catch block has `if (e is DioException)` check
+- [ ] DioException returns `Left(ApiErrorEntity.fromJson(e.response?.data))`
+- [ ] Generic exceptions return `Left(InternalErrorEntity(...))`
+
+**Priority:** This is a HIGH priority fix documented in ARCHITECTURE_CHALLENGES.md (Section 3: Standardize Error Handling). All repositories must be refactored to follow this pattern before v1.0 release.
+
 ### 5. Use Cases
 
 ```dart

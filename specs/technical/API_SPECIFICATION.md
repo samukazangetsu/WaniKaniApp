@@ -3,7 +3,7 @@
 > **Base URL:** `https://api.wanikani.com/v2`  
 > **Documentação Oficial:** https://docs.api.wanikani.com/20170710/  
 > **Versão API:** 2.0 (2017-07-10 revision)  
-> **Última Atualização deste Doc:** 19/10/2025
+> **Última Atualização deste Doc:** 03/11/2025
 
 ---
 
@@ -487,38 +487,163 @@ Para collections (lista de items):
 
 ### Handling no Repository
 
+**⚠️ CRITICAL: DioException Handling Pattern**
+
+**IMPORTANTE:** Dio **lança exceções** em status codes 4xx/5xx. Você DEVE usar try-catch com verificação explícita de `DioException`.
+
+**❌ ERRADO - Crasheia em 401/429/500:**
 ```dart
-Future<Either<IError, T>> _handleResponse<T>(
-  Future<Response> request,
-  T Function(dynamic data) parser,
-) async {
+Future<Either<IError, UserEntity>> getUser() async {
+  final response = await _datasource.getUser();
+  
+  if (response.isSuccessful) {
+    return Right(UserModel.fromJson(response.data['data']).entity);
+  }
+  
+  // Nunca chega aqui em 4xx/5xx - Dio já lançou exceção
+  return Left(ApiErrorEntity.fromJson(response.data));
+}
+```
+
+**✅ CORRETO - Trata DioException explicitamente:**
+```dart
+@override
+Future<Either<IError, UserEntity>> getUser() async {
   try {
-    final response = await request;
-    
-    if (response.statusCode == 200) {
-      return Right(parser(response.data));
+    final Response<dynamic> response = await _datasource.getUser();
+
+    if (response.isSuccessful) {
+      return tryDecode<Either<IError, UserEntity>>(
+        () => Right(UserModel.fromJson(response.data['data']).entity),
+        orElse: (_) => Left(
+          InternalErrorEntity(CoreStrings.errorUnknown),
+        ),
+      );
     }
-    
-    return Left(ApiErrorEntity.fromResponse(response));
-  } on DioException catch (e) {
-    if (e.response?.statusCode == 401) {
-      // Logout user - invalid API key
-      return Left(UnauthorizedError());
+
+    // Quando !isSuccessful MAS não lançou exceção (raro)
+    return Left(ApiErrorEntity.fromJson(response.data));
+  } on Exception catch (e) {
+    // ⚠️ CRITICAL: Verificar DioException explicitamente
+    if (e is DioException) {
+      // Erro está em e.response?.data, NÃO no response original
+      return Left(
+        ApiErrorEntity.fromJson(e.response?.data ?? <String, dynamic>{}),
+      );
     }
-    
-    if (e.response?.statusCode == 429) {
-      // Rate limit
-      return Left(RateLimitError(resetAt: e.response?.headers...));
-    }
-    
-    if (e.type == DioExceptionType.connectionTimeout ||
-        e.type == DioExceptionType.receiveTimeout) {
-      return Left(NetworkError('Request timeout'));
-    }
-    
-    return Left(InternalErrorEntity(e.message ?? 'Unknown error'));
+
+    // Outros erros (parsing, etc)
+    return Left(InternalErrorEntity(e.toString()));
   }
 }
+```
+
+**Por que esse padrão é mandatório:**
+
+1. **Dio lança exceções em 4xx/5xx** - Sem try-catch, app crasheia
+2. **Erro está em `e.response?.data`** - Não no response normal
+3. **ApiErrorEntity.fromJson** espera formato WaniKani: `{"error": "...", "code": 401}`
+4. **Sem `if (e is DioException)`** - App mostra "Unknown error" em vez da mensagem real
+
+**Referência:**
+- ✅ `lib/features/login/data/repositories/user_repository.dart` - Implementação CORRETA
+- ❌ `lib/features/home/data/repositories/home_repository.dart` - NEEDS REFACTOR (4 métodos)
+
+**Handling Específico por Status:**
+
+```dart
+on Exception catch (e) {
+  if (e is DioException) {
+    // 401 - Unauthorized (API key inválida)
+    if (e.response?.statusCode == 401) {
+      // TODO: Implementar AuthInterceptor global
+      return Left(UnauthorizedErrorEntity('API key inválida'));
+    }
+    
+    // 429 - Rate Limit
+    if (e.response?.statusCode == 429) {
+      final reset = e.response?.headers.value('ratelimit-reset');
+      return Left(RateLimitErrorEntity(resetAt: reset));
+    }
+    
+    // 500/503 - Server Error (retry recomendado)
+    if (e.response?.statusCode == 500 || e.response?.statusCode == 503) {
+      return Left(ServerErrorEntity('WaniKani server error - try again later'));
+    }
+    
+    // Outros erros da API
+    return Left(ApiErrorEntity.fromJson(e.response?.data ?? {}));
+  }
+  
+  // Timeout errors
+  if (e is DioException) {
+    if (e.type == DioExceptionType.connectionTimeout ||
+        e.type == DioExceptionType.receiveTimeout) {
+      return Left(NetworkErrorEntity('Request timeout'));
+    }
+  }
+  
+  return Left(InternalErrorEntity(e.toString()));
+}
+```
+
+**Retry Strategy com Exponential Backoff:**
+
+Para 429 (Rate Limit) e 500/503 (Server Errors):
+
+```dart
+import 'dart:math';
+
+class RetryInterceptor extends Interceptor {
+  static const int maxRetries = 3;
+  static const Duration initialDelay = Duration(seconds: 1);
+
+  @override
+  Future<void> onError(
+    DioException err,
+    ErrorInterceptorHandler handler,
+  ) async {
+    final retryable = err.response?.statusCode == 429 ||
+        err.response?.statusCode == 500 ||
+        err.response?.statusCode == 503;
+
+    if (retryable && (err.requestOptions.extra['retryCount'] ?? 0) < maxRetries) {
+      final retryCount = (err.requestOptions.extra['retryCount'] ?? 0) + 1;
+      final delay = initialDelay * pow(2, retryCount - 1); // Exponential
+
+      debugPrint('⏳ Retrying request in ${delay.inSeconds}s (attempt $retryCount)');
+
+      await Future.delayed(delay);
+
+      err.requestOptions.extra['retryCount'] = retryCount;
+      
+      try {
+        final response = await Dio().fetch(err.requestOptions);
+        handler.resolve(response);
+      } catch (e) {
+        handler.next(err);
+      }
+    } else {
+      handler.next(err);
+    }
+  }
+}
+```
+
+**Registrar no Dio:**
+```dart
+final dio = Dio(BaseOptions(
+  baseUrl: 'https://api.wanikani.com/v2',
+  connectTimeout: Duration(seconds: 30),
+  receiveTimeout: Duration(seconds: 30),
+));
+
+dio.interceptors.addAll([
+  AuthInterceptor(),      // Adiciona Bearer token
+  RetryInterceptor(),     // Retry automático em 429/500/503
+  LoggingInterceptor(),   // Logs de debug
+  MockInterceptor(),      // Mock mode (apenas em main_mock.dart)
+]);
 ```
 
 ---

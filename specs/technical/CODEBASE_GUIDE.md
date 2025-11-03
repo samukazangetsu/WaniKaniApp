@@ -1,7 +1,53 @@
 # Guia de Navegação do Codebase
 
 > **Projeto:** WaniKani App  
-> **Última Atualização:** 11/10/2025
+> **Última Atualização:** 11/10/2025  
+> **Status:** Early Development - Login e Home implementados
+
+---
+
+## 📊 Status de Implementação
+
+### Features Completas ✅
+- **login/** - Autenticação WaniKani (API token + secure storage)
+  - Screens: SplashScreen, LoginScreen
+  - Use Cases: GetUserUseCase
+  - Entities: UserEntity, SubscriptionEntity
+  - ⚠️ **Issue Known:** SplashCubit emits after close on hot reload (line 48)
+  - ✅ **Reference:** user_repository.dart - DioException handling pattern correto
+
+- **home/** - Dashboard com métricas de estudo
+  - Screens: HomeScreen
+  - Use Cases: 4 (assignments metrics, current level, review stats, lesson stats)
+  - Entities: AssignmentEntity, LevelProgressionEntity, ReviewStatsEntity, LessonStatsEntity
+  - ❌ **Needs Refactor:** home_repository.dart - 4 métodos sem DioException handling
+
+### Core Completo ✅
+- **error/** - IError interface, ApiErrorEntity, InternalErrorEntity
+- **mixins/** - DecodeModelMixin para safe JSON parsing
+- **network/** - Dio client + 3 interceptors (auth, logging, mock)
+- **storage/** - FlutterSecureStorage wrapper
+- **theme/** - Design system completo (WaniKani colors + Noto Sans JP)
+- **widgets/** - 3 componentes reutilizáveis (app bar, metric card, progress card)
+
+### Routing Completo ✅
+- **app_router.dart** - GoRouter configurado com auth guards
+- **app_routes.dart** - Enum type-safe (loading, login, home)
+
+### Planejadas (Não Iniciadas) ⏳
+- **reviews/** - Sistema de reviews
+- **lessons/** - Sistema de lições
+- **subjects/** - Detalhes de kanji/vocabulary/radical
+- **statistics/** - Gráficos e análises
+- **settings/** - Configurações e preferências
+- **Offline-First:** Drift database (cache com TTL 24h)
+
+### Prioridades Técnicas (ARCHITECTURE_CHALLENGES.md)
+1. **HIGH:** AuthInterceptor global para 401 errors
+2. **HIGH:** Standardize DioException handling em HomeRepository
+3. **MEDIUM:** Fix SplashCubit emit after close
+4. **MEDIUM:** Implement Drift offline cache
+5. **LOW:** Rate limiting (60 req/min) e retry logic
 
 ---
 
@@ -73,31 +119,44 @@ config/
 
 ```text
 core/
-├── database/                 # Configuração Drift (a implementar)
-│   ├── app_database.dart     # Classe principal do banco
-│   ├── tables/               # Definições de tabelas
-│   └── daos/                 # Data Access Objects
+├── dependency_injection/     # ✅ GetIt service locator
+│   └── core_di.dart          # Registra todos os serviços
 │
 ├── error/                    # ✅ Error handling
 │   ├── ierror.dart           # Interface base de erros
-│   ├── api_error_entity.dart # Erros de API
-│   └── internal_error_entity.dart  # Erros internos
+│   ├── api_error_entity.dart # Erros de API WaniKani
+│   └── internal_error_entity.dart  # Erros internos/parsing
 │
 ├── mixins/                   # ✅ Mixins reutilizáveis
-│   └── decode_model_mixin.dart  # Safe JSON parsing
+│   └── decode_model_mixin.dart  # Safe JSON parsing com logging
 │
-├── network/                  # Configuração de rede (a implementar)
-│   ├── dio_client.dart       # Dio configurado
-│   ├── interceptors/         # Auth, logging, retry
-│   └── api_endpoints.dart    # URLs da API
+├── network/                  # ✅ Configuração Dio
+│   ├── dio_client.dart       # Cliente Dio configurado
+│   ├── interceptors/
+│   │   ├── auth_interceptor.dart     # ⚠️ PARTIAL: 401 só em LoginCubit
+│   │   ├── logging_interceptor.dart  # Logs de requests/responses
+│   │   └── mock_interceptor.dart     # Mock mode (main_mock.dart)
+│   └── extensions/
+│       └── response_extension.dart   # Helper isSuccessful
 │
-├── theme/                    # Design system (a implementar)
-│   ├── app_colors.dart       # Paleta de cores
-│   ├── app_text_styles.dart  # Tipografia
-│   └── app_theme.dart        # ThemeData
+├── storage/                  # ✅ Persistência local
+│   └── local_data_manager.dart  # FlutterSecureStorage wrapper
 │
-└── strings/                  # Strings compartilhadas (a implementar)
-    └── common_strings.dart
+├── theme/                    # ✅ Design system completo
+│   ├── theme.dart            # Barrel export
+│   ├── wanikani_theme.dart   # ThemeData completo
+│   ├── wanikani_colors.dart  # Paleta WaniKani + SRS
+│   ├── wanikani_text_styles.dart  # Tipografia Noto Sans JP
+│   └── wanikani_design.dart  # Constantes de design
+│
+├── utils/                    # ✅ Strings compartilhadas
+│   └── core_strings.dart     # Mensagens de erro padrão
+│
+└── widgets/                  # ✅ Componentes reutilizáveis
+    ├── widgets.dart          # Barrel export
+    ├── wanikani_app_bar.dart # AppBar customizada
+    ├── study_metric_card.dart # Card de métricas
+    └── level_progress_card.dart # Card de progresso
 ```
 
 **Arquivos-Chave:**
@@ -172,24 +231,81 @@ class AssignmentRepository with DecodeModelMixin {
 
 ```text
 features/
-├── home/                     # ✅ Estrutura criada (vazia)
+├── login/                    # ✅ COMPLETO - Autenticação WaniKani
 │   ├── data/
 │   │   ├── datasources/
+│   │   │   └── wanikani_auth_datasource.dart  # API /user endpoint
 │   │   ├── models/
+│   │   │   ├── user_model.dart                # Serialização UserEntity
+│   │   │   └── subscription_model.dart        # Dados de assinatura
 │   │   └── repositories/
+│   │       └── user_repository.dart           # ✅ REFERÊNCIA: DioException handling
 │   ├── domain/
 │   │   ├── entities/
-│   │   ├── repositories/    # Interfaces
+│   │   │   ├── user_entity.dart               # Dados do usuário
+│   │   │   └── subscription_entity.dart       # Status da conta
+│   │   ├── repositories/
+│   │   │   └── iuser_repository.dart          # Interface IUserRepository
 │   │   └── usecases/
-│   └── presentation/
-│       ├── cubits/
-│       └── screens/
+│   │       └── get_user_usecase.dart          # Validação de API token
+│   ├── presentation/
+│   │   ├── cubits/
+│   │   │   ├── login_cubit.dart               # Gerencia tela de login
+│   │   │   ├── login_state.dart
+│   │   │   ├── splash_cubit.dart              # ⚠️ ISSUE: emit after close (line 48)
+│   │   │   └── splash_state.dart
+│   │   ├── screens/
+│   │   │   ├── login_screen.dart              # Entrada de API token
+│   │   │   └── splash_screen.dart             # Verificação inicial
+│   │   └── widgets/
+│   │       ├── token_text_field.dart          # Input customizado
+│   │       ├── token_invalid_bottom_sheet.dart  # Erro de token
+│   │       └── tutorial_bottom_sheet.dart     # Como obter API key
+│   └── utils/
+│       └── login_strings.dart                 # Mensagens localizadas
+│
+├── home/                     # ✅ COMPLETO - Dashboard principal
+│   ├── data/
+│   │   ├── datasources/
+│   │   │   └── wanikani_home_datasource.dart  # ❌ NEEDS REFACTOR (4 endpoints)
+│   │   ├── models/
+│   │   │   ├── assignment_model.dart          # Itens SRS do usuário
+│   │   │   ├── level_progression_model.dart   # Progresso nos níveis
+│   │   │   ├── review_stats_model.dart        # Estatísticas de reviews
+│   │   │   └── lesson_stats_model.dart        # Estatísticas de lições
+│   │   └── repositories/
+│   │       └── home_repository.dart           # ❌ NEEDS REFACTOR (DioException)
+│   ├── domain/
+│   │   ├── entities/
+│   │   │   ├── assignment_entity.dart         # Item de estudo
+│   │   │   ├── assignment_metrics.dart        # Métricas agregadas
+│   │   │   ├── level_progression_entity.dart  # Progresso de nível
+│   │   │   ├── review_stats_entity.dart       # Stats de reviews
+│   │   │   └── lesson_stats_entity.dart       # Stats de lições
+│   │   ├── repositories/
+│   │   │   └── i_home_repository.dart         # Interface IHomeRepository
+│   │   └── usecases/
+│   │       ├── get_assignment_metrics_usecase.dart  # Métricas do dashboard
+│   │       ├── get_current_level_usecase.dart       # Nível atual
+│   │       ├── get_review_stats_usecase.dart        # Reviews disponíveis
+│   │       └── get_lesson_stats_usecase.dart        # Lições disponíveis
+│   ├── presentation/
+│   │   ├── cubits/
+│   │   │   ├── home_cubit.dart                # Orquestra 4 use cases
+│   │   │   └── home_state.dart                # Estados do dashboard
+│   │   ├── screens/
+│   │   │   └── home_screen.dart               # Tela principal
+│   │   └── widgets/
+│   │       └── dashboard_metric_card.dart     # Card de métrica
+│   └── utils/
+│       └── home_strings.dart                  # Mensagens localizadas
 │
 └── (futuras features a implementar)
-    ├── dashboard/
-    ├── assignments/
-    ├── statistics/
-    └── settings/
+    ├── reviews/              # Sistema de reviews (kanji/vocab/radical)
+    ├── lessons/              # Sistema de lições (novos itens)
+    ├── subjects/             # Detalhes de kanji/vocabulary/radicals
+    ├── statistics/           # Gráficos e análises
+    └── settings/             # Configurações e preferências
 ```
 
 **Anatomia de uma Feature Completa:**
@@ -421,49 +537,78 @@ class AssignmentsScreen extends StatelessWidget {
 
 ```text
 routing/
-└── (a implementar)
-    ├── app_router.dart        # Configuração do GoRouter
-    ├── route_names.dart       # Enum de rotas
-    └── route_guards.dart      # Guards de autenticação
+├── app_router.dart        # ✅ Configuração GoRouter com guards
+└── app_routes.dart        # ✅ Enum type-safe de rotas
 ```
 
-**Exemplo (futuro):**
+**Rotas Implementadas:**
+
+```dart
+// routing/app_routes.dart
+enum AppRoutes {
+  /// Tela de loading - verificação inicial de token
+  loading('/'),
+
+  /// Tela de login - autenticação com token API
+  login('/login'),
+
+  /// Home/Dashboard - tela principal após login
+  home('/home');
+
+  const AppRoutes(this.path);
+  final String path;
+}
+```
+
+**Router Configurado:**
 
 ```dart
 // routing/app_router.dart
 final appRouter = GoRouter(
-  initialLocation: '/',
+  initialLocation: AppRoutes.loading.path,
   routes: [
     GoRoute(
-      path: '/',
-      builder: (context, state) => HomePage(),
+      path: AppRoutes.loading.path,
+      name: 'loading',
+      builder: (context, state) => const SplashScreen(),
     ),
     GoRoute(
-      path: '/dashboard',
-      builder: (context, state) => DashboardScreen(),
+      path: AppRoutes.login.path,
+      name: 'login',
+      builder: (context, state) => const LoginScreen(),
     ),
     GoRoute(
-      path: '/assignments/:id',
-      builder: (context, state) {
-        final id = int.parse(state.pathParameters['id']!);
-        return AssignmentDetailScreen(id: id);
-      },
+      path: AppRoutes.home.path,
+      name: 'home',
+      builder: (context, state) => const HomeScreen(),
     ),
   ],
   redirect: (context, state) {
-    // Auth guard
-    final isAuthenticated = GetIt.I<AuthService>().isAuthenticated;
-    if (!isAuthenticated && state.location != '/login') {
-      return '/login';
-    }
+    // Auth guard implementado em SplashCubit
+    // Redireciona para /login se token inválido
+    // Redireciona para /home se token válido
     return null;
   },
 );
+```
 
-// Navegação:
-context.go('/dashboard');
-context.push('/assignments/123');
-context.pop();
+**Navegação:**
+
+```dart
+// Usar context extensions do go_router
+context.go(AppRoutes.home.path);      // Navegar e substituir
+context.push(AppRoutes.login.path);   // Navegar e empilhar
+context.pop();                        // Voltar
+```
+
+**Rotas Futuras (Comentadas):**
+
+```dart
+// Preparadas em app_routes.dart para expansão:
+// reviews('/reviews'),
+// lessons('/lessons'),
+// settings('/settings'),
+// levelDetails('/level/:id'),
 ```
 
 ---
