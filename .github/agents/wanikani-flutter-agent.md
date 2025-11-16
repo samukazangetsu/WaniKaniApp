@@ -1,14 +1,8 @@
 ---
-# Fill in the fields below to create a basic custom agent for your repository.
-# The Copilot CLI can be used for local testing: https://gh.io/customagents/cli
-# To make this agent available, merge this file into the default repository branch.
-# For format details, see: https://gh.io/customagents/config
-
 name: wanikani-flutter-agent
-description: Agente especializado em desenvolvimento Flutter para o WaniKani App
+description: Agente especializado em desenvolvimento Flutter para o WaniKani App seguindo Clean Architecture
 ---
 
-# My Agent
 # Instruções para Agente de Desenvolvimento - WaniKani App
 
 > **Objetivo:** Guia completo para agentes de IA desenvolverem código para o WaniKani App  
@@ -35,20 +29,20 @@ Você é um agente especializado em desenvolvimento Flutter responsável por imp
 Antes de escrever qualquer código, você DEVE ler os seguintes documentos:
 
 ### Leitura Obrigatória (nesta ordem)
-1. **[CLAUDE.meta.md](CLAUDE.meta.md)** - Padrões de código, anti-patterns, convenções
-2. **[CODEBASE_GUIDE.md](CODEBASE_GUIDE.md)** - Estrutura de pastas e navegação
-3. **[API_SPECIFICATION.md](API_SPECIFICATION.md)** - Integração WaniKani API v2
-4. **[BUSINESS_LOGIC.md](BUSINESS_LOGIC.md)** - Lógica de domínio e conceitos SRS
+1. **[CLAUDE.meta.md](../../specs/technical/CLAUDE.meta.md)** - Padrões de código, anti-patterns, convenções
+2. **[CODEBASE_GUIDE.md](../../specs/technical/CODEBASE_GUIDE.md)** - Estrutura de pastas e navegação
+3. **[API_SPECIFICATION.md](../../specs/technical/API_SPECIFICATION.md)** - Integração WaniKani API v2
+4. **[BUSINESS_LOGIC.md](../../specs/technical/BUSINESS_LOGIC.md)** - Lógica de domínio e conceitos SRS
 
 ### Leitura Recomendada
-5. **[adr/001-clean-architecture.md](adr/001-clean-architecture.md)** - Por que Clean Architecture
-6. **[adr/002-bloc-state-management.md](adr/002-bloc-state-management.md)** - Por que BLoC/Cubit
-7. **[adr/003-offline-first-drift.md](adr/003-offline-first-drift.md)** - Por que Drift
-8. **[DESIGN_SYSTEM.md](../design/DESIGN_SYSTEM.md)** - Cores, tipografia, componentes
+5. **[adr/001-clean-architecture.md](../../specs/technical/adr/001-clean-architecture.md)** - Por que Clean Architecture
+6. **[adr/002-bloc-state-management.md](../../specs/technical/adr/002-bloc-state-management.md)** - Por que BLoC/Cubit
+7. **[adr/003-offline-first-drift.md](../../specs/technical/adr/003-offline-first-drift.md)** - Por que Drift
+8. **[DESIGN_SYSTEM.md](../../specs/design/DESIGN_SYSTEM.md)** - Cores, tipografia, componentes
 
 ### Consulta sob Demanda
-9. **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Quando encontrar erros
-10. **[CONTRIBUTING.md](CONTRIBUTING.md)** - Workflow de desenvolvimento
+9. **[TROUBLESHOOTING.md](../../specs/technical/TROUBLESHOOTING.md)** - Quando encontrar erros
+10. **[CONTRIBUTING.md](../../specs/technical/CONTRIBUTING.md)** - Workflow de desenvolvimento
 
 ---
 
@@ -777,8 +771,8 @@ flutter run
 ### Para Implementar uma Nova Feature
 
 1. **Planejamento**
-   - Ler BUSINESS_LOGIC.md para entender o domínio
-   - Ler API_SPECIFICATION.md para endpoints necessários
+   - Ler [BUSINESS_LOGIC.md](../../specs/technical/BUSINESS_LOGIC.md) para entender o domínio
+   - Ler [API_SPECIFICATION.md](../../specs/technical/API_SPECIFICATION.md) para endpoints necessários
    - Identificar entidades, usecases e estados necessários
 
 2. **Domain Layer** (começar SEMPRE aqui)
@@ -903,12 +897,12 @@ flutter run
 
 ### Quando Tiver Dúvidas
 
-1. **Padrões de código** → Consulte CLAUDE.meta.md
-2. **Estrutura de pastas** → Consulte CODEBASE_GUIDE.md
-3. **Erros conhecidos** → Consulte TROUBLESHOOTING.md
-4. **Integrações API** → Consulte API_SPECIFICATION.md
-5. **Lógica de negócio** → Consulte BUSINESS_LOGIC.md
-6. **Design/UI** → Consulte DESIGN_SYSTEM.md
+1. **Padrões de código** → Consulte [CLAUDE.meta.md](../../specs/technical/CLAUDE.meta.md)
+2. **Estrutura de pastas** → Consulte [CODEBASE_GUIDE.md](../../specs/technical/CODEBASE_GUIDE.md)
+3. **Erros conhecidos** → Consulte [TROUBLESHOOTING.md](../../specs/technical/TROUBLESHOOTING.md)
+4. **Integrações API** → Consulte [API_SPECIFICATION.md](../../specs/technical/API_SPECIFICATION.md)
+5. **Lógica de negócio** → Consulte [BUSINESS_LOGIC.md](../../specs/technical/BUSINESS_LOGIC.md)
+6. **Design/UI** → Consulte [DESIGN_SYSTEM.md](../../specs/design/DESIGN_SYSTEM.md)
 
 ### Recursos Externos
 
